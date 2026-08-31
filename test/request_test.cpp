@@ -5,67 +5,65 @@
 #include "../src/request.hpp"
 
 TEST(RequestTest, ParseRequestLine) {
-    Request request;
+  Request request;
 
-    std::string raw = "GET /echo HTTP/1.1";
+  std::string raw = "GET /echo HTTP/1.1";
 
-    parse_request_line(request, raw);
+  request.parseRequestLine(raw);
 
-    EXPECT_EQ(request.request_line.method, "GET");
-    EXPECT_EQ(request.request_line.path, "/echo");
-    EXPECT_EQ(request.request_line.major_version, 1);
-    EXPECT_EQ(request.request_line.minor_version, 1);
+  EXPECT_EQ(request.requestLine().method(), "GET");
+  EXPECT_EQ(request.requestLine().path(), "/echo");
+  EXPECT_EQ(request.requestLine().majorVersion(), 1);
+  EXPECT_EQ(request.requestLine().minorVersion(), 1);
 }
 
 TEST(RequestTest, ParseHeader) {
-    Request request;
+  Request request;
 
-    std::string raw =
-        "Host: localhost:8080\r\n"
-        "User-Agent: Mozilla/5.0\r\n"
-        "Accept: */*\r\n"
-        "Content-Type: application/json\r\n"
-        "Content-Length: 0\r\n"
-        "\r\n";
+  std::string raw = "Host: localhost:8080\r\n"
+                    "User-Agent: Mozilla/5.0\r\n"
+                    "Accept: */*\r\n"
+                    "Content-Type: application/json\r\n"
+                    "Content-Length: 0\r\n"
+                    "\r\n";
 
-    parse_header(request, raw);
+  request.parseHeader(raw);
 
-    EXPECT_EQ(request.header.host, "localhost:8080");
-    EXPECT_EQ(request.header.user_agent, "Mozilla/5.0");
-    EXPECT_EQ(request.header.accept, "*/*");
-    EXPECT_EQ(request.header.content_type, "application/json");
-    EXPECT_EQ(request.header.content_length, 0);
+  EXPECT_EQ(request.header().host(), "localhost:8080");
+  EXPECT_EQ(request.header().userAgent(), "Mozilla/5.0");
+  EXPECT_EQ(request.header().accept(), "*/*");
+  EXPECT_EQ(request.header().contentType(), "application/json");
+  EXPECT_EQ(request.header().contentLength(), 0);
 }
 
 TEST(RequestTest, ParseRequest) {
-    Request request;
-    RequestState state = RequestState::RequestLine;
+  Request request;
+  RequestState state = RequestState::RequestLine;
 
-    std::string raw =
-        "POST /echo HTTP/1.1\r\n"
-        "Host: localhost:8080\r\n"
-        "User-Agent: Mozilla/5.0\r\n"
-        "Accept: */*\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: 5\r\n"
-        "\r\n"
-        "Hello";
+  std::string raw = "POST /echo HTTP/1.1\r\n"
+                    "Host: localhost:8080\r\n"
+                    "User-Agent: Mozilla/5.0\r\n"
+                    "Accept: */*\r\n"
+                    "Content-Type: text/plain\r\n"
+                    "Content-Length: 5\r\n"
+                    "\r\n"
+                    "Hello";
 
-    bool result = parse_request(request, state, raw);
+  bool result = request.parse(raw, state);
 
-    EXPECT_TRUE(result);
-    EXPECT_EQ(state, RequestState::Complete);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(state, RequestState::Complete);
 
-    EXPECT_EQ(request.request_line.method, "POST");
-    EXPECT_EQ(request.request_line.path, "/echo");
-    EXPECT_EQ(request.request_line.major_version, 1);
-    EXPECT_EQ(request.request_line.minor_version, 1);
+  EXPECT_EQ(request.requestLine().method(), "POST");
+  EXPECT_EQ(request.requestLine().path(), "/echo");
+  EXPECT_EQ(request.requestLine().majorVersion(), 1);
+  EXPECT_EQ(request.requestLine().minorVersion(), 1);
 
-    EXPECT_EQ(request.header.host, "localhost:8080");
-    EXPECT_EQ(request.header.user_agent, "Mozilla/5.0");
-    EXPECT_EQ(request.header.accept, "*/*");
-    EXPECT_EQ(request.header.content_type, "text/plain");
-    EXPECT_EQ(request.header.content_length, 5);
+  EXPECT_EQ(request.header().host(), "localhost:8080");
+  EXPECT_EQ(request.header().userAgent(), "Mozilla/5.0");
+  EXPECT_EQ(request.header().accept(), "*/*");
+  EXPECT_EQ(request.header().contentType(), "text/plain");
+  EXPECT_EQ(request.header().contentLength(), 5);
 
-    EXPECT_EQ(request.body, "Hello");
+  EXPECT_EQ(request.body(), "Hello");
 }

@@ -9,7 +9,9 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(server_test
     request_test.cpp
+    response_test.cpp
     ../src/request.cpp
+    ../src/response.cpp
 )
 
 target_include_directories(server_test

@@ -5,32 +5,72 @@
 
 enum class RequestState { RequestLine, Header, Body, Complete };
 
-struct RequestLine {
-  std::string method;
-  std::string path;
-  uint8_t major_version;
-  uint8_t minor_version;
+class RequestLine {
+public:
+    RequestLine() = default;
+
+    RequestLine& setMethod(std::string method);
+    RequestLine& setPath(std::string path);
+    RequestLine& setVersion(uint8_t major_version, uint8_t minor_version);
+
+    const std::string& method() const noexcept;
+    const std::string& path() const noexcept;
+    uint8_t majorVersion() const noexcept;
+    uint8_t minorVersion() const noexcept;
+
+private:
+    std::string method_;
+    std::string path_;
+    uint8_t major_version_ = 1;
+    uint8_t minor_version_ = 1;
 };
 
-struct Header {
-  std::string host;
-  std::string user_agent;
-  std::string accept;
-  std::string content_type;
-  int content_length = 0;
+class Header {
+public:
+    Header() = default;
+
+    Header& setHost(std::string host);
+    Header& setUserAgent(std::string user_agent);
+    Header& setAccept(std::string accept);
+    Header& setContentType(std::string content_type);
+    Header& setContentLength(int content_length);
+
+    const std::string& host() const noexcept;
+    const std::string& userAgent() const noexcept;
+    const std::string& accept() const noexcept;
+    const std::string& contentType() const noexcept;
+    int contentLength() const noexcept;
+
+private:
+    std::string host_;
+    std::string user_agent_;
+    std::string accept_;
+    std::string content_type_;
+    int content_length_ = 0;
 };
 
-struct Request {
-  RequestLine request_line;
-  Header header;
-  std::string body;
+class Request {
+public:
+    Request() = default;
 
-  void print_request_line() const;
-  void print_header() const;
-  void print_body() const;
+    Request& setRequestLine(const RequestLine& request_line);
+    Request& setHeader(const Header& header);
+    Request& setBody(std::string body);
+
+    const RequestLine& requestLine() const noexcept;
+    const Header& header() const noexcept;
+    const std::string& body() const noexcept;
+
+    void parseRequestLine(const std::string& request_line_raw);
+    void parseHeader(const std::string& request_header_raw);
+    bool parse(std::string& request_raw, RequestState& state);
+
+    void printRequestLine() const;
+    void printHeader() const;
+    void printBody() const;
+
+private:
+    RequestLine request_line_;
+    Header header_;
+    std::string body_;
 };
-
-void parse_request_line(Request &request, const std::string &request_line_raw);
-void parse_header(Request &request, const std::string &request_header_raw);
-bool parse_request(Request &request, RequestState &state,
-                   std::string &request_raw);

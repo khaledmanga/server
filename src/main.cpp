@@ -68,13 +68,13 @@ int main() {
 
       req_buffer.append(buffer, bytes_read);
 
-      parsed = parse_request(request, state, req_buffer);
+      parsed = request.parse(req_buffer, state);
     }
 
     if (parsed) {
-      request.print_request_line();
-      request.print_header();
-      request.print_body();
+      request.printRequestLine();
+      request.printHeader();
+      request.printBody();
     }
 
     close(client_fd);
