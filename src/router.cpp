@@ -1,5 +1,7 @@
 #include "router.hpp"
 
+std::vector<std::string> Route::getSegments() const { return this->segments; }
+
 std::vector<std::string> Route::parse_segments(const std::string &path) {
   std::vector<std::string> result;
 
@@ -54,4 +56,45 @@ void Router::add(const std::string &path, Handler &handler) {
   Route route(path);
 
   this->routes(route, handler);
+}
+
+Route *Router::match(const std::string &path) {
+  std::vector<std::string> request_path = parse_segments(path);
+
+  Route *best_match = nullptr;
+  size_t best_score = 0;
+
+  for (auto &route : routes) {
+    const auto &route_segments = route.getSegments();
+
+    if (request_path.size() != route_segments.size()) {
+      continue;
+    }
+
+    bool matched = true;
+    size_t score = 0;
+
+    for (size_t i = 0; i < route_segments.size(); ++i) {
+      const auto &route_segment = route_segments[i];
+      const auto &request_segment = request_path[i];
+
+      if (!route_segment.empty() && route_segment[0] == ':') {
+        continue;
+      }
+
+      if (route_segment != request_segment) {
+        matched = false;
+        break;
+      }
+
+      ++score;
+    }
+
+    if (matched && score > best_score) {
+      best_match = &route;
+      best_score = score;
+    }
+  }
+
+  return best_match;
 }
