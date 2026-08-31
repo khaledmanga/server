@@ -53,11 +53,18 @@ class Request {
 public:
     Request() = default;
 
-    Request& setRequestLine(const RequestLine& request_line);
+    Request& setMethod(std::string method);
+    Request& setPath(std::string path);
+    Request& setVersion(uint8_t major_version, uint8_t minor_version);
+
     Request& setHeader(const Header& header);
     Request& setBody(std::string body);
 
-    const RequestLine& requestLine() const noexcept;
+    const std::string& method() const noexcept;
+    const std::string& path() const noexcept;
+    uint8_t majorVersion() const noexcept;
+    uint8_t minorVersion() const noexcept;
+
     const Header& header() const noexcept;
     const std::string& body() const noexcept;
 

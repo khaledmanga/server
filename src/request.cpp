@@ -82,8 +82,18 @@ int Header::contentLength() const noexcept {
     return content_length_;
 }
 
-Request& Request::setRequestLine(const RequestLine& request_line) {
-    request_line_ = request_line;
+Request& Request::setMethod(std::string method) {
+    request_line_.setMethod(std::move(method));
+    return *this;
+}
+
+Request& Request::setPath(std::string path) {
+    request_line_.setPath(std::move(path));
+    return *this;
+}
+
+Request& Request::setVersion(uint8_t major_version, uint8_t minor_version) {
+    request_line_.setVersion(major_version, minor_version);
     return *this;
 }
 
@@ -97,8 +107,20 @@ Request& Request::setBody(std::string body) {
     return *this;
 }
 
-const RequestLine& Request::requestLine() const noexcept {
-    return request_line_;
+const std::string& Request::method() const noexcept {
+    return request_line_.method();
+}
+
+const std::string& Request::path() const noexcept {
+    return request_line_.path();
+}
+
+uint8_t Request::majorVersion() const noexcept {
+    return request_line_.majorVersion();
+}
+
+uint8_t Request::minorVersion() const noexcept {
+    return request_line_.minorVersion();
 }
 
 const Header& Request::header() const noexcept {
@@ -124,10 +146,10 @@ void Request::parseRequestLine(const std::string& request_line_raw) {
         return;
     }
 
-    request_line_.setMethod(method);
-    request_line_.setPath(path);
+    setMethod(method);
+    setPath(path);
 
-    request_line_.setVersion(
+    setVersion(
         static_cast<uint8_t>(
             std::stoi(version.substr(pos_slash + 1, pos_dot - pos_slash - 1))),
         static_cast<uint8_t>(std::stoi(version.substr(pos_dot + 1))));
@@ -212,11 +234,11 @@ bool Request::parse(std::string& request_raw, RequestState& state) {
 }
 
 void Request::printRequestLine() const {
-    std::cout << "Method: " << request_line_.method() << std::endl;
-    std::cout << "Path: " << request_line_.path() << std::endl;
+    std::cout << "Method: " << method() << std::endl;
+    std::cout << "Path: " << path() << std::endl;
     std::cout << "Version: HTTP/"
-              << static_cast<int>(request_line_.majorVersion()) << "."
-              << static_cast<int>(request_line_.minorVersion()) << std::endl;
+              << static_cast<int>(majorVersion()) << "."
+              << static_cast<int>(minorVersion()) << std::endl;
 }
 
 void Request::printHeader() const {

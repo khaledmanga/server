@@ -4,6 +4,19 @@
 
 #include "../src/request.hpp"
 
+TEST(RequestTest, SetRequestLineWithSetters) {
+  Request request;
+
+  request.setMethod("GET")
+      .setPath("/echo")
+      .setVersion(1, 1);
+
+  EXPECT_EQ(request.method(), "GET");
+  EXPECT_EQ(request.path(), "/echo");
+  EXPECT_EQ(request.majorVersion(), 1);
+  EXPECT_EQ(request.minorVersion(), 1);
+}
+
 TEST(RequestTest, ParseRequestLine) {
   Request request;
 
@@ -11,10 +24,10 @@ TEST(RequestTest, ParseRequestLine) {
 
   request.parseRequestLine(raw);
 
-  EXPECT_EQ(request.requestLine().method(), "GET");
-  EXPECT_EQ(request.requestLine().path(), "/echo");
-  EXPECT_EQ(request.requestLine().majorVersion(), 1);
-  EXPECT_EQ(request.requestLine().minorVersion(), 1);
+  EXPECT_EQ(request.method(), "GET");
+  EXPECT_EQ(request.path(), "/echo");
+  EXPECT_EQ(request.majorVersion(), 1);
+  EXPECT_EQ(request.minorVersion(), 1);
 }
 
 TEST(RequestTest, ParseHeader) {
@@ -54,10 +67,10 @@ TEST(RequestTest, ParseRequest) {
   EXPECT_TRUE(result);
   EXPECT_EQ(state, RequestState::Complete);
 
-  EXPECT_EQ(request.requestLine().method(), "POST");
-  EXPECT_EQ(request.requestLine().path(), "/echo");
-  EXPECT_EQ(request.requestLine().majorVersion(), 1);
-  EXPECT_EQ(request.requestLine().minorVersion(), 1);
+  EXPECT_EQ(request.method(), "POST");
+  EXPECT_EQ(request.path(), "/echo");
+  EXPECT_EQ(request.majorVersion(), 1);
+  EXPECT_EQ(request.minorVersion(), 1);
 
   EXPECT_EQ(request.header().host(), "localhost:8080");
   EXPECT_EQ(request.header().userAgent(), "Mozilla/5.0");
