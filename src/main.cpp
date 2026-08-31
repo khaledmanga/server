@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "request.hpp"
+#include "response.hpp"
 
 #include <iostream>
 
@@ -72,9 +73,15 @@ int main() {
     }
 
     if (parsed) {
-      request.printRequestLine();
-      request.printHeader();
-      request.printBody();
+      Response response;
+      std::string serialized_data = response.serialize();
+
+      ssize_t sent = send(client_fd,serialized_data.c_str(), serialized_data.size(), MSG_NOSIGNAL);
+    
+      if (sent < 0) {
+        if (errno == EINTR) continue;
+        break; 
+      }
     }
 
     close(client_fd);
