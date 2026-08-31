@@ -30,6 +30,7 @@ compile_commands.json
 *.gcda
 *.gcno
 *.profraw
+*.gcov
 
 .DS_Store
 Thumbs.db
