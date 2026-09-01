@@ -12,11 +12,12 @@ add_executable(server_test
     response_test.cpp
     ../src/request.cpp
     ../src/response.cpp
+    ../src/router.cpp
 )
 
 target_include_directories(server_test
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src
+        /../src
 )
 
 target_link_libraries(server_test

@@ -1,19 +1,43 @@
 #include "router.hpp"
 
-std::vector<std::string> Route::getSegments() const { return this->segments; }
+#include <cstddef>
+#include <string>
+#include <utility>
+#include <vector>
+
+const std::vector<std::string> &Route::getSegments() const { return segments; }
 
 std::vector<std::string> Route::parse_segments(const std::string &path) {
+
   std::vector<std::string> result;
 
-  std::string line = path.substr(0, path.find('?')) + "/";
+  const std::size_t query_pos = path.find('?');
 
-  size_t start = line.find('/') + 1;
-  size_t end = line.find('/', start);
+  std::string line =
+      path.substr(0, query_pos == std::string::npos ? path.size() : query_pos);
+      
+  if (line == "/") {
+    return result;
+  }
+
+  if (line.empty() || line.back() != '/') {
+    line += '/';
+  }
+
+  std::size_t start = 0;
+
+  if (line.front() == '/') {
+    start = 1;
+  }
+
+  std::size_t end = line.find('/', start);
 
   while (end != std::string::npos) {
+
     if (end > start) {
       result.push_back(line.substr(start, end - start));
     }
+
     start = end + 1;
     end = line.find('/', start);
   }
@@ -23,66 +47,91 @@ std::vector<std::string> Route::parse_segments(const std::string &path) {
 
 std::unordered_map<std::string, std::string>
 Route::parse_query(const std::string &path) {
+
   std::unordered_map<std::string, std::string> result;
 
-  std::string line = path.substr(path.find('?')) + "&";
+  const std::size_t query_pos = path.find('?');
 
-  size_t start = 0;
-  size_t end = line.find('&');
+  if (query_pos == std::string::npos) {
+    return result;
+  }
 
-  while (end != std::string::npos) {
-    std::string query_ele = line.substr(start, end - start);
-    size_t eq_pos = query_ele.find('=');
+  std::string line = path.substr(query_pos + 1);
+
+  std::size_t start = 0;
+
+  while (start < line.size()) {
+
+    std::size_t end = line.find('&', start);
+
+    if (end == std::string::npos) {
+      end = line.size();
+    }
+
+    std::string query_element = line.substr(start, end - start);
+
+    std::size_t eq_pos = query_element.find('=');
 
     if (eq_pos != std::string::npos) {
-      result[query_ele.substr(0, eq_pos)] = query_ele.substr(eq_pos + 1);
+
+      std::string key = query_element.substr(0, eq_pos);
+
+      std::string value = query_element.substr(eq_pos + 1);
+
+      result[key] = value;
     }
 
     start = end + 1;
-    end = line.find('&', start);
   }
 
   return result;
 }
 
 void Route::parse_path(const std::string &path) {
-  this->segments = this->parse_segments(path);
-  this->query = this->parse_query(path);
+
+  segments = parse_segments(path);
+  query = parse_query(path);
 }
 
-Route::Route(const std::string &path) { this->parse_path(path); }
+Route::Route(const std::string &path) { parse_path(path); }
 
-void Router::add(const std::string &path, Handler &handler) {
-  Route route(path);
+void Router::add(const std::string &path, Handler handler) {
 
-  this->routes(route, handler);
+  routes.emplace_back(Route(path), std::move(handler));
 }
 
-Route *Router::match(const std::string &path) {
-  std::vector<std::string> request_path = parse_segments(path);
+const std::pair<Route, Handler> *Router::match(const std::string &path) const {
 
-  Route *best_match = nullptr;
-  size_t best_score = 0;
+  std::vector<std::string> request_path = Route::parse_segments(path);
 
-  for (auto &route : routes) {
-    const auto &route_segments = route.getSegments();
+  const std::pair<Route, Handler> *best_match = nullptr;
+
+  std::size_t best_score = 0;
+
+  for (const auto &route : routes) {
+
+    const auto &route_segments = route.first.getSegments();
 
     if (request_path.size() != route_segments.size()) {
       continue;
     }
 
     bool matched = true;
-    size_t score = 0;
+    std::size_t score = 0;
 
-    for (size_t i = 0; i < route_segments.size(); ++i) {
+    for (std::size_t i = 0; i < route_segments.size(); ++i) {
+
       const auto &route_segment = route_segments[i];
+
       const auto &request_segment = request_path[i];
 
       if (!route_segment.empty() && route_segment[0] == ':') {
+
         continue;
       }
 
       if (route_segment != request_segment) {
+
         matched = false;
         break;
       }
@@ -90,7 +139,8 @@ Route *Router::match(const std::string &path) {
       ++score;
     }
 
-    if (matched && score > best_score) {
+    if (matched && (best_match == nullptr || score > best_score)) {
+
       best_match = &route;
       best_score = score;
     }
