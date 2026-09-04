@@ -55,6 +55,9 @@ class Response {
 public:
   Response() = default;
 
+  Response &status(int code);
+  Response &send(std::string body);
+
   Response &setStatusLine(const StatusLine &status_line);
   Response &setHeaders(const Headers &headers);
   Response &setBody(std::string body);

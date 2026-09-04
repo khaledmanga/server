@@ -134,6 +134,15 @@ Response &Response::setStatusLine(const StatusLine &status_line) {
   return *this;
 }
 
+Response &Response::status(int code) {
+  status_line_.setStatusCode(code);
+  return *this;
+}
+
+Response &Response::send(std::string body) {
+  return setBody(std::move(body));
+}
+
 Response &Response::setHeaders(const Headers &headers) {
 
   headers_ = headers;

@@ -9,7 +9,9 @@
 #include "request.hpp"
 #include "response.hpp"
 
-using Handler = std::function<Response(Request &)>;
+using Next = std::function<void()>;
+using Handler = std::function<void(Request &, Response &, Next)>;
+using Middleware = std::function<void(Request &, Response &, Next)>;
 
 class Route {
 private:
@@ -30,10 +32,21 @@ public:
 
 class Router {
 private:
-  std::vector<std::pair<Route, Handler>> routes;
+  struct RouteEntry {
+    std::string method;
+    Route route;
+    Handler handler;
+  };
+
+  std::vector<RouteEntry> routes;
+  std::vector<Middleware> middlewares;
 
 public:
+  void get(const std::string &path, Handler handler);
+  void post(const std::string &path, Handler handler);
   void add(const std::string &path, Handler handler);
-
-  const std::pair<Route, Handler> *match(const std::string &path) const;
+  void use(Middleware middleware);
+  Response handle(const std::string &path, Request &request) const;
+  const RouteEntry *match(const std::string &method,
+                          const std::string &path) const;
 };

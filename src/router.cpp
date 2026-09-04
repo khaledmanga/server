@@ -95,22 +95,65 @@ void Route::parse_path(const std::string &path) {
 
 Route::Route(const std::string &path) { parse_path(path); }
 
-void Router::add(const std::string &path, Handler handler) {
-
-  routes.emplace_back(Route(path), std::move(handler));
+void Router::get(const std::string &path, Handler handler) {
+  routes.push_back({"GET", Route(path), std::move(handler)});
 }
 
-const std::pair<Route, Handler> *Router::match(const std::string &path) const {
+void Router::post(const std::string &path, Handler handler) {
+  routes.push_back({"POST", Route(path), std::move(handler)});
+}
+
+void Router::add(const std::string &path, Handler handler) {
+  get(path, std::move(handler));
+}
+
+void Router::use(Middleware middleware) {
+  middlewares.emplace_back(std::move(middleware));
+}
+
+Response Router::handle(const std::string &path, Request &request) const {
+  Response response;
+  const auto *matched_route = match(request.method(), path);
+
+  Next next = [&] {
+    if (matched_route != nullptr) {
+      matched_route->handler(request, response, [] {});
+      return;
+    }
+
+    StatusLine status_line;
+    status_line.setStatusCode(404).setReasonPhrase("Not Found");
+    response.setStatusLine(status_line).send("<h1>404 Not Found</h1>");
+  };
+
+  for (auto middleware = middlewares.rbegin(); middleware != middlewares.rend();
+       ++middleware) {
+    Next current = std::move(next);
+    next = [middleware, current = std::move(current), &request, &response] {
+      (*middleware)(request, response, current);
+    };
+  }
+
+  next();
+  return response;
+}
+
+const Router::RouteEntry *Router::match(const std::string &method,
+                                        const std::string &path) const {
 
   std::vector<std::string> request_path = Route::parse_segments(path);
 
-  const std::pair<Route, Handler> *best_match = nullptr;
+  const RouteEntry *best_match = nullptr;
 
   std::size_t best_score = 0;
 
   for (const auto &route : routes) {
 
-    const auto &route_segments = route.first.getSegments();
+    if (route.method != method) {
+      continue;
+    }
+
+    const auto &route_segments = route.route.getSegments();
 
     if (request_path.size() != route_segments.size()) {
       continue;
