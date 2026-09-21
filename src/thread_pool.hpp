@@ -16,10 +16,11 @@ private:
   std::queue<Task> tasks_;
   std::mutex mtx_;
   std::condition_variable cv_;
+  std::atomic<bool>& shutdown_requested_;
   bool stop_ = false;
 
 public:
-  ThreadPool(int n);
+  ThreadPool(int n, std::atomic<bool>& shutdown_requested);
   void enqueue(Task task);
   void worker();
   ~ThreadPool();

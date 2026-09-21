@@ -38,7 +38,7 @@ int main() {
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
 
-    ThreadPool thread_pool(std::thread::hardware_concurrency());
+    ThreadPool thread_pool(std::thread::hardware_concurrency(), shutdown_requested);
     Router router;
 
     router.use([&logger](Request &request, Response &response, Next next) {
@@ -63,7 +63,7 @@ int main() {
       response.send("<h1>Hello World</h1>");
     });
 
-    Server server(8004);
+    Server server(8004, shutdown_requested);
 
     server.use(logger);
     server.use(thread_pool);

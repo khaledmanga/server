@@ -10,8 +10,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-Server::Server(int port)
-    : port_(port) {
+Server::Server(int port, std::atomic<bool>& shutting_down)
+    : port_(port), shutting_down_(shutting_down) {
   setupSocket();
 }
 
@@ -72,6 +72,10 @@ void Server::run() {
 }
 
 void Server::acceptClient() {
+  if (this->shutting_down_.load()) {
+    return;
+  }
+
   sockaddr_in client_address{};
   socklen_t address_length = sizeof(client_address);
   int client_fd = accept(server_fd_,
@@ -80,6 +84,11 @@ void Server::acceptClient() {
 
   if (client_fd < 0) {
     std::cerr << "Failed to accept client connection\n";
+    return;
+  }
+
+  if (this->shutting_down_.load()) {
+    close(client_fd);
     return;
   }
 
