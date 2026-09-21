@@ -30,9 +30,8 @@ TEST(RouterTest, GetHandlerUsesExpressStyleRequestResponseAndNext) {
 
 TEST(RouterTest, RouteMethodMustMatchRequestMethod) {
   Router app;
-  app.get("/hello", [](Request &, Response &response, Next) {
-    response.send("get");
-  });
+  app.get("/hello",
+          [](Request &, Response &response, Next) { response.send("get"); });
 
   Request request;
   request.setMethod("POST").setPath("/hello");

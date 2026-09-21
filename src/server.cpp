@@ -4,13 +4,12 @@
 #include <cerrno>
 #include <cstring>
 #include <iostream>
-#include <stdexcept>
 #include <netinet/in.h>
 #include <stdexcept>
 #include <sys/socket.h>
 #include <unistd.h>
 
-Server::Server(int port, std::atomic<bool>& shutting_down)
+Server::Server(int port, std::atomic<bool> &shutting_down)
     : port_(port), shutting_down_(shutting_down) {
   setupSocket();
 }
@@ -78,9 +77,9 @@ void Server::acceptClient() {
 
   sockaddr_in client_address{};
   socklen_t address_length = sizeof(client_address);
-  int client_fd = accept(server_fd_,
-                         reinterpret_cast<sockaddr *>(&client_address),
-                         &address_length);
+  int client_fd =
+      accept(server_fd_, reinterpret_cast<sockaddr *>(&client_address),
+             &address_length);
 
   if (client_fd < 0) {
     std::cerr << "Failed to accept client connection\n";
@@ -118,8 +117,8 @@ void Server::handleClient(int client_fd) {
 
   Response response = router_->handle(request.path(), request);
   std::string serialized_data = response.serialize();
-  ssize_t sent = send(client_fd, serialized_data.c_str(), serialized_data.size(),
-                      MSG_NOSIGNAL);
+  ssize_t sent = send(client_fd, serialized_data.c_str(),
+                      serialized_data.size(), MSG_NOSIGNAL);
   if (sent < 0 && errno != EINTR) {
     std::cerr << "Failed to send response\n";
   }

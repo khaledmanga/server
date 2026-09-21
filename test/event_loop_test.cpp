@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <atomic>
+#include <gtest/gtest.h>
 
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -13,7 +13,7 @@ TEST(EventLoopTest, DispatchesReadableChannelAndStops) {
 
   std::atomic<bool> shutdown_requested{false};
   EventLoop event_loop(shutdown_requested);
-  
+
   Channel channel(pipe_fds[0], EPOLLIN);
   channel.setReadCallback([&event_loop, &pipe_fds, &shutdown_requested] {
     char value;
@@ -29,4 +29,3 @@ TEST(EventLoopTest, DispatchesReadableChannelAndStops) {
   close(pipe_fds[0]);
   close(pipe_fds[1]);
 }
-

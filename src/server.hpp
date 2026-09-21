@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <atomic>
+#include <memory>
 
 #include "channel.hpp"
 #include "event_loop.hpp"
@@ -11,7 +11,7 @@
 
 class Server {
 public:
-  explicit Server(int port, std::atomic<bool>& shutting_down);
+  explicit Server(int port, std::atomic<bool> &shutting_down);
   ~Server();
 
   void use(Logger &logger) noexcept;
@@ -32,7 +32,7 @@ private:
   EventLoop *event_loop_ = nullptr;
   ThreadPool *thread_pool_ = nullptr;
   std::unique_ptr<Channel> server_channel_;
-  std::atomic<bool>& shutting_down_;
+  std::atomic<bool> &shutting_down_;
 
   void setupSocket();
   void acceptClient();

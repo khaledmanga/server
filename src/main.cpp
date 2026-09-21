@@ -17,11 +17,7 @@ int signal_event_fd = -1;
 void signal_handler(int) {
   uint64_t value = 1;
 
-  write(
-      signal_event_fd,
-      &value,
-      sizeof(value)
-  );
+  write(signal_event_fd, &value, sizeof(value));
 }
 
 int main() {
@@ -38,28 +34,24 @@ int main() {
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
 
-    ThreadPool thread_pool(std::thread::hardware_concurrency(), shutdown_requested);
+    ThreadPool thread_pool(std::thread::hardware_concurrency(),
+                           shutdown_requested);
     Router router;
 
     router.use([&logger](Request &request, Response &response, Next next) {
-      logger.log(
-          LogLevel::INFO,
-          request.method() + " " + request.path() + " started"
-      );
+      logger.log(LogLevel::INFO,
+                 request.method() + " " + request.path() + " started");
 
       next();
-
 
       logger.log(
 
           LogLevel::INFO,
           request.method() + " " + request.path() + " " +
-              std::to_string(response.statusLine().statusCode())
-      );
+              std::to_string(response.statusLine().statusCode()));
     });
 
     router.get("/", [](Request &, Response &response, Next) {
-
       response.send("<h1>Hello World</h1>");
     });
 

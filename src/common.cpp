@@ -3,7 +3,7 @@
 std::string getCurrentTime() {
   time_t rawtime;
   time(&rawtime);
-  struct tm* timeinfo = localtime(&rawtime);
+  struct tm *timeinfo = localtime(&rawtime);
 
   char buffer[80];
 

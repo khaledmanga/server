@@ -7,9 +7,7 @@
 TEST(RequestTest, SetRequestLineWithSetters) {
   Request request;
 
-  request.setMethod("GET")
-      .setPath("/echo")
-      .setVersion(1, 1);
+  request.setMethod("GET").setPath("/echo").setVersion(1, 1);
 
   EXPECT_EQ(request.method(), "GET");
   EXPECT_EQ(request.path(), "/echo");

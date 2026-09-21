@@ -10,11 +10,10 @@
 enum class LogLevel : int { DEBUG = 1, INFO = 2, WARN = 3, ERROR = 4 };
 
 const std::unordered_map<LogLevel, std::string> LogLevelMap = {
-  {LogLevel::DEBUG, "DEBUG"},
-  {LogLevel::INFO, "INFO"},
-  {LogLevel::WARN, "WARN"},
-  {LogLevel::ERROR, "ERROR"}
-};
+    {LogLevel::DEBUG, "DEBUG"},
+    {LogLevel::INFO, "INFO"},
+    {LogLevel::WARN, "WARN"},
+    {LogLevel::ERROR, "ERROR"}};
 
 class LogRecord {
 private:

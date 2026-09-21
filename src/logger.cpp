@@ -13,26 +13,18 @@ void LogRecord::set(const LogLevel &log_level, std::thread::id thread_id,
   timestamp_ = getCurrentTime();
 }
 
-std::string LogRecord::msg() const {
-  return message_;
-}
+std::string LogRecord::msg() const { return message_; }
 
-std::string LogRecord::timestamp() const {
-  return timestamp_;
-}
+std::string LogRecord::timestamp() const { return timestamp_; }
 
-LogLevel LogRecord::level() const {
-  return level_;
-}
+LogLevel LogRecord::level() const { return level_; }
 
-std::thread::id LogRecord::thread_id() const {
-  return thread_id_;
-}
+std::thread::id LogRecord::thread_id() const { return thread_id_; }
 
 std::string LogRecord::getMsg() const {
   std::ostringstream output;
-  output << timestamp_ << " [" << LogLevelMap.at(level_) << "] "
-         << thread_id_ << " '" << message_ << "'";
+  output << timestamp_ << " [" << LogLevelMap.at(level_) << "] " << thread_id_
+         << " '" << message_ << "'";
   return output.str();
 }
 
@@ -54,5 +46,3 @@ void Logger::log(LogLevel level, const std::string &message) {
     sink->write(record);
   }
 }
-
-

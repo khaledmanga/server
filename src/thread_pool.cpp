@@ -1,14 +1,13 @@
 #include "thread_pool.hpp"
 
-ThreadPool::ThreadPool(int n,  std::atomic<bool>& shutdown_requested): shutdown_requested_(shutdown_requested){
+ThreadPool::ThreadPool(int n, std::atomic<bool> &shutdown_requested)
+    : shutdown_requested_(shutdown_requested) {
   if (n <= 0) {
     n = 1;
   }
 
   for (int i = 0; i < n; ++i) {
-    workers_.push_back(std::thread([this] {
-      worker();
-    }));
+    workers_.push_back(std::thread([this] { worker(); }));
   }
 }
 

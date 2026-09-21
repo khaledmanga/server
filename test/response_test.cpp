@@ -5,9 +5,7 @@
 TEST(ResponseTest, StatusLine) {
   StatusLine status_line;
 
-  status_line.setVersion("HTTP/1.1")
-      .setStatusCode(200)
-      .setReasonPhrase("OK");
+  status_line.setVersion("HTTP/1.1").setStatusCode(200).setReasonPhrase("OK");
 
   EXPECT_EQ(status_line.version(), "HTTP/1.1");
   EXPECT_EQ(status_line.statusCode(), 200);
@@ -40,18 +38,14 @@ TEST(ResponseTest, Response) {
   Response response;
 
   StatusLine status_line;
-  status_line.setVersion("HTTP/1.1")
-      .setStatusCode(200)
-      .setReasonPhrase("OK");
+  status_line.setVersion("HTTP/1.1").setStatusCode(200).setReasonPhrase("OK");
 
   Headers headers;
   headers.setContentType("text/plain")
       .setServer("MyServer/1.0")
       .setConnection("close");
 
-  response.setStatusLine(status_line)
-      .setHeaders(headers)
-      .setBody("Hello");
+  response.setStatusLine(status_line).setHeaders(headers).setBody("Hello");
 
   EXPECT_EQ(response.statusLine().version(), "HTTP/1.1");
   EXPECT_EQ(response.statusLine().statusCode(), 200);

@@ -139,9 +139,7 @@ Response &Response::status(int code) {
   return *this;
 }
 
-Response &Response::send(std::string body) {
-  return setBody(std::move(body));
-}
+Response &Response::send(std::string body) { return setBody(std::move(body)); }
 
 Response &Response::setHeaders(const Headers &headers) {
 

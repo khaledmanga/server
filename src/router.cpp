@@ -15,7 +15,7 @@ std::vector<std::string> Route::parse_segments(const std::string &path) {
 
   std::string line =
       path.substr(0, query_pos == std::string::npos ? path.size() : query_pos);
-      
+
   if (line == "/") {
     return result;
   }
