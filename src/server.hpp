@@ -17,6 +17,7 @@ public:
   void use(ThreadPool &thread_pool) noexcept;
   void use(EventLoop &event_loop) noexcept;
   void use(Router &router) noexcept;
+  void shutdown();
   void run();
 
 private:
@@ -24,6 +25,7 @@ private:
 
   int port_;
   int server_fd_ = -1;
+  std::atomic<bool> shuttingDown_{false};
   Logger *logger_ = nullptr;
   Router *router_ = nullptr;
   EventLoop *event_loop_ = nullptr;
