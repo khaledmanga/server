@@ -1,23 +1,21 @@
 #pragma once
 
-#include <condition_variable>
 #include <memory>
-#include <mutex>
-#include <queue>
 #include <string>
 #include <thread>
 #include <unordered_map>
-
 #include <vector>
+
+#include "bounded_queue.hpp"
+
 
 enum class LogLevel : int {
   DEBUG = 1,
-
   INFO = 2,
+
   WARN = 3,
   ERROR = 4
 };
-
 
 const std::unordered_map<LogLevel, std::string> LogLevelMap = {
     {LogLevel::DEBUG, "DEBUG"},
@@ -29,25 +27,24 @@ class LogRecord {
  private:
   std::string timestamp_;
   LogLevel level_ = LogLevel::INFO;
-
   std::thread::id thread_id_;
   std::string message_;
 
  public:
   std::string msg() const;
   std::string timestamp() const;
-  LogLevel level() const;
-  std::thread::id thread_id() const;
 
+  LogLevel level() const;
+
+  std::thread::id thread_id() const;
   std::string getMsg() const;
 
-
-  void set(LogLevel level, std::thread::id thread_id,
+  void set(LogLevel level,
+           std::thread::id thread_id,
            const std::string& message);
 };
 
 class Sink {
-
  public:
   virtual ~Sink() = default;
 
@@ -62,13 +59,10 @@ class Terminal : public Sink {
 
 class Logger {
  private:
-
   std::vector<std::unique_ptr<Sink>> sinks_;
-  std::mutex mutex_;
-  std::queue<LogRecord> queue_;
-  std::condition_variable cv_;
+  BoundedQueue<LogRecord> queue_;
+
   std::thread worker_;
-  bool running_ = true;
 
   void workLoop();
 
