@@ -1,13 +1,23 @@
 #pragma once
 
+#include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <string>
 #include <thread>
 #include <unordered_map>
+
 #include <vector>
 
-enum class LogLevel : int { DEBUG = 1, INFO = 2, WARN = 3, ERROR = 4 };
+enum class LogLevel : int {
+  DEBUG = 1,
+
+  INFO = 2,
+  WARN = 3,
+  ERROR = 4
+};
+
 
 const std::unordered_map<LogLevel, std::string> LogLevelMap = {
     {LogLevel::DEBUG, "DEBUG"},
@@ -16,39 +26,56 @@ const std::unordered_map<LogLevel, std::string> LogLevelMap = {
     {LogLevel::ERROR, "ERROR"}};
 
 class LogRecord {
-private:
+ private:
   std::string timestamp_;
   LogLevel level_ = LogLevel::INFO;
+
   std::thread::id thread_id_;
   std::string message_;
 
-public:
+ public:
   std::string msg() const;
   std::string timestamp() const;
   LogLevel level() const;
   std::thread::id thread_id() const;
+
   std::string getMsg() const;
-  void set(const LogLevel &log_level, std::thread::id thread_id,
-           const std::string &message);
+
+
+  void set(LogLevel level, std::thread::id thread_id,
+           const std::string& message);
 };
 
 class Sink {
-public:
+
+ public:
   virtual ~Sink() = default;
-  virtual void write(const LogRecord &log_record) = 0;
+
+  virtual void write(const LogRecord& log_record) = 0;
 };
 
 class Terminal : public Sink {
-public:
-  void write(const LogRecord &log_record) override;
+ public:
+  void write(const LogRecord& log_record) override;
 };
 
-class Logger {
-private:
-  std::vector<std::unique_ptr<Sink>> sinks;
-  std::mutex mutex_;
 
-public:
+class Logger {
+ private:
+
+  std::vector<std::unique_ptr<Sink>> sinks_;
+  std::mutex mutex_;
+  std::queue<LogRecord> queue_;
+  std::condition_variable cv_;
+  std::thread worker_;
+  bool running_ = true;
+
+  void workLoop();
+
+ public:
+  Logger();
+  ~Logger();
+
   void addSink(std::unique_ptr<Sink> sink);
-  void log(LogLevel level, const std::string &message);
+  void log(LogLevel level, const std::string& message);
 };
