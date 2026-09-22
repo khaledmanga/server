@@ -6,10 +6,7 @@
 #include "../src/server.hpp"
 
 TEST(ServerTest, RequiresDependenciesBeforeRunning) {
-
-  std::atomic<bool> shutdown_requested{false};
-
-  Server server(0, shutdown_requested);
+  Server server(0);
 
   EXPECT_THROW(server.run(), std::logic_error);
 }

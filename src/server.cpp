@@ -9,8 +9,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-Server::Server(int port, std::atomic<bool> &shutting_down)
-    : port_(port), shutting_down_(shutting_down) {
+Server::Server(int port)
+    : port_(port) {
   setupSocket();
 }
 
@@ -71,7 +71,7 @@ void Server::run() {
 }
 
 void Server::acceptClient() {
-  if (this->shutting_down_.load()) {
+  if (AppContext::shutting_down.load()) {
     return;
   }
 
@@ -86,7 +86,7 @@ void Server::acceptClient() {
     return;
   }
 
-  if (this->shutting_down_.load()) {
+  if (AppContext::shutting_down.load()) {
     close(client_fd);
     return;
   }

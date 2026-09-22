@@ -1,7 +1,6 @@
 #include "thread_pool.hpp"
 
-ThreadPool::ThreadPool(int n, std::atomic<bool> &shutdown_requested)
-    : shutdown_requested_(shutdown_requested) {
+ThreadPool::ThreadPool(int n) {
   if (n <= 0) {
     n = 1;
   }
@@ -49,7 +48,7 @@ void ThreadPool::worker() {
 void ThreadPool::enqueue(Task task) {
   {
     std::lock_guard<std::mutex> lock(mtx_);
-    if (stop_ || this->shutdown_requested_.load()) {
+    if (stop_ || AppContext::shutting_down.load()) {
 
       return;
     }

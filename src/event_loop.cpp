@@ -1,9 +1,6 @@
 #include "event_loop.hpp"
 
-EventLoop::EventLoop(std::atomic<bool> &shutdown_requested)
-
-    : running_(false), epoll_fd_(-1), event_fd_(-1),
-      shutdown_requested_(shutdown_requested) {
+EventLoop::EventLoop(): running_(false), epoll_fd_(-1), event_fd_(-1) {
   this->event_fd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
 
   if (this->event_fd_ == -1) {
@@ -44,7 +41,7 @@ EventLoop::~EventLoop() {
 void EventLoop::run() {
   this->running_ = true;
 
-  while (this->running_ && !this->shutdown_requested_.load()) {
+  while (this->running_ && !AppContext::shutting_down.load()) {
 
     int count = epoll_wait(this->epoll_fd_, this->event_, 64, -1);
 
@@ -72,7 +69,7 @@ void EventLoop::run() {
         std::cout << "Grateful shutdown\n";
 
         if (n == sizeof(value)) {
-          this->shutdown_requested_.store(true);
+          AppContext::shutting_down.store(true);
         }
 
         continue;
@@ -96,7 +93,7 @@ void EventLoop::run() {
 void EventLoop::stop() {
 
   this->running_ = false;
-  this->shutdown_requested_.store(true);
+  AppContext::shutting_down.store(true);
 }
 
 void EventLoop::addChannel(Channel *channel) {

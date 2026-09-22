@@ -9,23 +9,19 @@
 #include <unistd.h>
 #include <unordered_map>
 
+#include "context.hpp"
 #include "channel.hpp"
 
 class EventLoop {
 private:
   bool running_;
   int epoll_fd_;
-
   int event_fd_;
-
   epoll_event event_[64];
-
-  std::atomic<bool> &shutdown_requested_;
-
   std::unordered_map<int, Channel *> channels_;
 
 public:
-  explicit EventLoop(std::atomic<bool> &shutdown_requested);
+  explicit EventLoop();
   ~EventLoop();
 
   void run();
