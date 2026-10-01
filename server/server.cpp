@@ -59,4 +59,6 @@ void Server::run() {
   this->bindSocket();
   this->listenSocket();
   this->acceptClient();
+
+  std::cout << "Server is listening in port " << this->port << std::endl;
 }
