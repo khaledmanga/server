@@ -48,6 +48,10 @@ void Server::acceptClient() {
       perror("Accept socket");
       continue;
     }
+	
+	Connection connection(client_fd);
+	
+	connection.handle_read();
 
     close(client_fd);
   }

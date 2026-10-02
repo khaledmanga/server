@@ -7,6 +7,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "../http_parser/http_parser.hpp"
+#include "../context/connection.hpp"
+
 class Server {
 public:
   Server(int port_);
