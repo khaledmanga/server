@@ -6,7 +6,7 @@ void Server::createSocket() {
   int server_fd_ = socket(AF_INET, SOCK_STREAM, 0);
   int opt = 1;
 
-  if (server_fd == -1) {
+  if (server_fd_ == -1) {
     perror("Socket create");
     return;
   }
@@ -22,17 +22,17 @@ void Server::bindSocket() {
   addr.sin_addr.s_addr = INADDR_ANY;
   addr.sin_port = htons(this->port);
 
-  if (bind(this->server_fd, (sockaddr *)addr, sizeof(addr)) == -1) {
+  if (bind(this->server_fd, (sockaddr *)&addr, sizeof(addr)) == -1) {
     perror("Bind socket");
-    return
+    return;
   }
 }
 
 void Server::listenSocket() {
-  if (listen(this->server_fd, SOMACCONN) == -1) {
+  if (listen(this->server_fd, SOMAXCONN) == -1) {
     perror("Listen socket");
     close(this->server_fd);
-    return
+    return;
   }
 }
 
@@ -42,10 +42,11 @@ void Server::acceptClient() {
     socklen_t client_len = sizeof(client_addr);
 
     int client_fd =
-        accept(this->server_fd, (sockaddr *)client_addr, &client_addr);
+        accept(this->server_fd, (sockaddr *)&client_addr, &client_len);
 
     if (client_fd == -1) {
-      perror("Accept socket") continue;
+      perror("Accept socket");
+      continue;
     }
 
     close(client_fd);
@@ -58,7 +59,8 @@ void Server::run() {
   this->createSocket();
   this->bindSocket();
   this->listenSocket();
-  this->acceptClient();
 
   std::cout << "Server is listening in port " << this->port << std::endl;
+  
+  this->acceptClient();
 }
