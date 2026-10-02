@@ -19,10 +19,15 @@ public:
   std::string host;
   std::string content_type;
   int content_length;
+  
+  friend std::ostream& operator << (std::ostream& os, const Header &h);
 };
 
 class Body {
-  
+public:
+  std::string value;
+
+  friend std::ostream& operator << (std::ostream& os, const Body &b);
 };
 
 class Request {
