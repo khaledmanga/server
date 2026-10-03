@@ -19,6 +19,7 @@ void Server::createSocket() {
 
 void Server::bindSocket() {
   sockaddr_in addr{};
+
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = INADDR_ANY;
   addr.sin_port = htons(this->port);
@@ -38,34 +39,38 @@ void Server::listenSocket() {
 }
 
 void Server::acceptClient() {
-  while (true) {
-    sockaddr_in client_addr{};
-    socklen_t client_len = sizeof(client_addr);
+  sockaddr_in client_addr{};
+  socklen_t client_len = sizeof(client_addr);
 
-    int client_fd =
-        accept(this->server_fd, (sockaddr *)&client_addr, &client_len);
+  int client_fd =
+      accept(this->server_fd, (sockaddr *)&client_addr, &client_len);
 
-    if (client_fd == -1) {
-      perror("Accept socket");
-      continue;
-    }
-
-    Connection connection(client_fd, this->router);
-
-    connection.handle_read();
-
-    close(client_fd);
+  if (client_fd == -1) {
+    perror("Accept socket");
+    return;
   }
 
-  close(this->server_fd);
+  this->event_loop.add_event(client_fd);
+}
+
+void Server::handleClient(int fd) {
+  Connection connection(fd, this->router);
+
+  connection.handle_read();
+
+  this->event_loop.remove_event(fd);
+  close(fd);
 }
 
 void Server::run() {
-  this->createSocket();
-  this->bindSocket();
-  this->listenSocket();
+  createSocket();
+  bindSocket();
+  listenSocket();
 
-  std::cout << "Server is listening in port " << this->port << std::endl;
+  std::cout << "Server is listening on port " << this->port << std::endl;
 
-  this->acceptClient();
+  this->event_loop.run(
+      this->server_fd, 
+      [this]() { this->acceptClient(); },
+      [this](int fd) { this->handleClient(fd); });
 }
