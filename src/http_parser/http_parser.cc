@@ -50,8 +50,6 @@ HttpRequestState httpParser(Request &request,
       return httpRequestState;
     }
 
-    auto clrf = raw_request.find("\r\n");
-
     std::string headers = raw_request.substr(0, double_clrf + 4);
 
     auto start = 0;
@@ -90,12 +88,17 @@ HttpRequestState httpParser(Request &request,
 
   if (httpRequestState == HttpRequestState::Body) {
     if (request.header.content_length > 0) {
-      request.body.value = raw_request.substr(0, request.header.content_length);
+      const std::size_t content_length =
+          static_cast<std::size_t>(request.header.content_length);
+      if (raw_request.size() < content_length) {
+        return httpRequestState;
+      }
+
+      request.body.value = raw_request.substr(0, content_length);
+      raw_request.erase(0, content_length);
     }
 
     httpRequestState = HttpRequestState::Completed;
-
-    raw_request.erase(0);
   }
 
   return httpRequestState;

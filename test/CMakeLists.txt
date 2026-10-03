@@ -3,6 +3,7 @@ list(FILTER SRC_SOURCES EXCLUDE REGEX "main\\.cc$")
 
 add_executable(
   unit_test
+  http_parser/http_parser_test.cc
   logger/logger_test.cc
   ${SRC_SOURCES}
 )
