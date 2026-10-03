@@ -3,16 +3,18 @@
 #include <sys/socket.h>
 
 #include "../http_parser/http_parser.hpp"
+#include "../response/response.hpp"
+#include "../router/router.hpp"
 
 class Connection {
-	private:
-		int fd;
-		Request request;
-		std::string read_buffer;
-		std::string write_buffer;
-			
-	public:
-		Connection(int fd_);
-		void handle_read();
-		void handle_write();
+public:
+  Connection(int fd_, const Router &router_);
+  void handle_read();
+
+private:
+  int fd;
+  const Router &router;
+  Request request;
+  std::string read_buffer;
+  std::string write_buffer;
 };

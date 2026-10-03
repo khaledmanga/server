@@ -1,18 +1,19 @@
 #pragma once
 
 #include <arpa/inet.h>
+#include <iostream>
 #include <netinet/in.h>
 #include <stdio.h>
-#include <iostream>
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "../http_parser/http_parser.hpp"
 #include "../context/connection.hpp"
+#include "../http_parser/http_parser.hpp"
+#include "../router/router.hpp"
 
 class Server {
 public:
-  Server(int port_);
+  Server(int port_, const Router &router_);
   void run();
 
 private:
@@ -23,4 +24,5 @@ private:
 
   int port;
   int server_fd;
+  const Router &router;
 };

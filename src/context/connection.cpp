@@ -1,32 +1,42 @@
 #include "connection.hpp"
 
-Connection::Connection(int fd_) {
-	this->fd = fd_;
-}
+#include <cerrno>
+#include <iostream>
+
+Connection::Connection(int fd_, const Router &router_)
+    : fd(fd_), router(router_) {}
 
 void Connection::handle_read() {
-    this->read_buffer.resize(4096);
+  this->read_buffer.resize(4096);
+  const ssize_t bytes =
+      recv(this->fd, this->read_buffer.data(), this->read_buffer.size(), 0);
 
-    ssize_t bytes = recv(this->fd, this->read_buffer.data(), this->read_buffer.size(), 0);
+  if (bytes <= 0) {
+    return;
+  }
 
+  this->read_buffer.resize(static_cast<std::size_t>(bytes));
+  HttpRequestState state = HttpRequestState::RequestLine;
+  state = httpParser(this->request, state, this->read_buffer);
 
-    if (bytes <= 0) return;
+  Response response;
+  if (state == HttpRequestState::Completed) {
+    this->router.handle(this->request, response);
+  } else {
+    response.status(HTTP::StatusCode::BAD_REQUEST).send("Bad Request");
+  }
 
-    this->read_buffer.resize(bytes);
-	
-	HttpRequestState httpRequestState = HttpRequestState::RequestLine;
-	
-	HttpRequestState state = httpParser(this->request, httpRequestState, this->read_buffer);
-	
-	std::cout << this->request << std::endl;
-}
-
-void Connection::handle_write() {
-	if (this->write_buffer.empty()) return;
-	
-	ssize_t bytes = send(this->fd, this->write_buffer.data(), this->write_buffer.size(), 0);
-	
-	if (bytes <= 0) return;
-	
-	this->write_buffer.erase(0, bytes);
+  this->write_buffer = response.serialize();
+  std::size_t sent = 0;
+  while (sent < this->write_buffer.size()) {
+    const ssize_t result = send(this->fd, this->write_buffer.data() + sent,
+                                this->write_buffer.size() - sent, 0);
+    if (result <= 0) {
+      if (result < 0 && errno == EINTR) {
+        continue;
+      }
+      return;
+    }
+    sent += static_cast<std::size_t>(result);
+  }
 }

@@ -1,8 +1,11 @@
-#include "./server/server.hpp"
+#include "./app/app.hpp"
 
 int main() {
-  Server app = Server(3000);
+  App app;
 
-  app.run();
+  app.get("/",
+          [](Request &, Response &response) { response.send("Hello World!"); });
+
+  app.listen(3000);
   return 0;
 }

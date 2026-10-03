@@ -1,28 +1,27 @@
 #pragma once
 
-#include <iostream>
+#include <functional>
+#include <string>
 #include <vector>
-#include <cstring>
-#include <utility>
 
-#include "../request/request.cpp"
-#include "../response/response.cpp"
+#include "../request/request.hpp"
+#include "../response/response.hpp"
 
-using Handler = std::function<void(Request *req, Response *res)>
-
-class Route {
-  public:
-    Router(const std::string& path);
-    void parseSegments(std::string& path);
-    void parseQueries(std::string& path);
-    void parse(const std::string& path);
-    std::vector<std::string> segments;
-    std::unordered_map<std::string, std::string> querys;
-};
+using Handler = std::function<void(Request &, Response &)>;
 
 class Router {
-  Router() = default;
-  std::vector<std::pair<Route, Handler>> routes;
-  void add(const string& path, Handler handler);
-  Route match();
-} 
+public:
+  void get(const std::string &path, Handler handler);
+  void post(const std::string &path, Handler handler);
+  bool handle(Request &request, Response &response) const;
+
+private:
+  struct Route {
+    std::string method;
+    std::string path;
+    Handler handler;
+  };
+
+  std::vector<Route> routes;
+  void add(const std::string &method, const std::string &path, Handler handler);
+};

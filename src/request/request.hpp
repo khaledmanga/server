@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>
 #include <cstring>
+#include <iostream>
 
 class RequestLine {
 public:
@@ -10,24 +10,24 @@ public:
   std::string protocol;
   int major_version;
   int minor_version;
-  
-  friend std::ostream& operator << (std::ostream& os, const RequestLine &rl);
+
+  friend std::ostream &operator<<(std::ostream &os, const RequestLine &rl);
 };
 
 class Header {
 public:
   std::string host;
   std::string content_type;
-  int content_length;
-  
-  friend std::ostream& operator << (std::ostream& os, const Header &h);
+  int content_length = 0;
+
+  friend std::ostream &operator<<(std::ostream &os, const Header &h);
 };
 
 class Body {
 public:
   std::string value;
 
-  friend std::ostream& operator << (std::ostream& os, const Body &b);
+  friend std::ostream &operator<<(std::ostream &os, const Body &b);
 };
 
 class Request {
@@ -36,5 +36,5 @@ public:
   Header header;
   Body body;
 
-  friend std::ostream& operator << (std::ostream& os, const Request &r);
+  friend std::ostream &operator<<(std::ostream &os, const Request &r);
 };

@@ -1,12 +1,13 @@
 add_executable(
 	server 
 	main.cpp 
+	./app/app.cpp
 	./server/server.cpp 
 	./context/connection.cpp 
 	./http_parser/http_parser.cpp 
 	./request/request.cpp
+  ./router/router.cpp
   ./response/response.cpp
 	./utils/common.cpp
 	./constant/common.cpp
 )
-

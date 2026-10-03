@@ -1,6 +1,7 @@
 #include "server.hpp"
 
-Server::Server(int port_) { this->port = port_; }
+Server::Server(int port_, const Router &router_)
+    : port(port_), server_fd(-1), router(router_) {}
 
 void Server::createSocket() {
   int server_fd_ = socket(AF_INET, SOCK_STREAM, 0);
@@ -48,10 +49,10 @@ void Server::acceptClient() {
       perror("Accept socket");
       continue;
     }
-	
-	Connection connection(client_fd);
-	
-	connection.handle_read();
+
+    Connection connection(client_fd, this->router);
+
+    connection.handle_read();
 
     close(client_fd);
   }
@@ -65,6 +66,6 @@ void Server::run() {
   this->listenSocket();
 
   std::cout << "Server is listening in port " << this->port << std::endl;
-  
+
   this->acceptClient();
 }

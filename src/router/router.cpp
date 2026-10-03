@@ -1,61 +1,47 @@
 #include "router.hpp"
 
-void Router::add(const string& path, Handler handler) {
-  this->route.push(std::make_pair(Route(path), handler));
-}
+#include <utility>
 
-Router::Router(const std::string& path) {
-  this->parse(path);
-}
+namespace {
+std::string normalizePath(const std::string &target) {
+  const std::size_t query = target.find('?');
+  std::string path = target.substr(0, query);
 
-void Route::parse(const std::string& path) {
-  const auto queryPos = path.find("?");
-
-  if(queryPos == std::string::npos) {
-    return;
+  if (path.empty()) {
+    return "/";
   }
-  
-  std::string segments = path.substr(0, queryPos;
-  std::string queris = path.substr(queryPos + 1);
 
- this->parseSegments(segments);
- this->parseQueries(queris);
-}
-
-void Route::parseSegments(std::string& path) {
-  path += "/";
-
-  auto start = 0;
-  auto end = path.find("/", 1);
-
-  while(end != std::string::npos) {
-    this->segments.push_back(path.substr(start, end - start));
-    start = end + 1;
-    end = path.find("/");
+  while (path.size() > 1 && path.back() == '/') {
+    path.pop_back();
   }
+
+  return path;
+}
+} // namespace
+
+void Router::add(const std::string &method, const std::string &path,
+                 Handler handler) {
+  this->routes.push_back({method, normalizePath(path), std::move(handler)});
 }
 
-void Route::parseQueries(std::string& path) {
-  path += "&";
+void Router::get(const std::string &path, Handler handler) {
+  this->add("GET", path, std::move(handler));
+}
 
-  std::size_t start = 0;
-  std::size_t end = path.find('&');
+void Router::post(const std::string &path, Handler handler) {
+  this->add("POST", path, std::move(handler));
+}
 
-  while (end != std::string::npos) {
-    const std::string param = path.substr(start, end - start);
+bool Router::handle(Request &request, Response &response) const {
+  const std::string path = normalizePath(request.request_line.target);
 
-    const std::size_t equal = param.find('=');
-
-
-    if (equal != std::string::npos) {
-
-      const std::string key = param.substr(0, equal);
-      const std::string value = param.substr(equal + 1);
-
-      queries.insert({key, value});
+  for (const Route &route : this->routes) {
+    if (route.method == request.request_line.method && route.path == path) {
+      route.handler(request, response);
+      return true;
     }
-
-    start = end + 1;
-    end = path.find('&', start);
   }
+
+  response.status(HTTP::StatusCode::NOT_FOUND).send("Not Found");
+  return false;
 }
