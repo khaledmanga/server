@@ -37,7 +37,7 @@ enum class StatusCode : int {
 };
 
 std::string getReasonPhrase(StatusCode code);
-} // namespace HTTP
+}  // namespace HTTP
 
 namespace Log {
 enum class Level { DEBUG, INFO, WARN, ERROR };

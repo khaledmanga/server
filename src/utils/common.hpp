@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../constant/common.hpp"
 #include <cstring>
+
+#include "../constant/common.hpp"
 
 bool isValidMethodHttp(const std::string &http_method);
 

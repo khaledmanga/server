@@ -15,18 +15,18 @@ struct LogRecord {
 };
 
 class Sink {
-public:
+ public:
   virtual ~Sink() = default;
   virtual void log(const LogRecord &record) = 0;
 };
 
 class Terminal : public Sink {
-public:
+ public:
   void log(const LogRecord &record) override;
 };
 
 class Logger {
-public:
+ public:
   Logger();
   ~Logger();
   Logger(const Logger &) = delete;
@@ -38,7 +38,7 @@ public:
   void Warn(const std::string &message);
   void log(Log::Level level, const std::string &message);
 
-private:
+ private:
   std::vector<Sink *> sinks;
   std::mutex mutex;
 };

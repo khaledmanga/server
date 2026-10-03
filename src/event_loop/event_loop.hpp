@@ -1,17 +1,18 @@
 #pragma once
 
-#include <functional>
 #include <sys/epoll.h>
 #include <unistd.h>
+
+#include <functional>
 
 const int MAX_EVENTS = 64;
 
 class EventLoop {
-private:
+ private:
   int epoll_fd;
   bool running;
 
-public:
+ public:
   EventLoop();
   ~EventLoop();
 

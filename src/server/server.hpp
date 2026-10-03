@@ -1,11 +1,12 @@
 #pragma once
 
 #include <arpa/inet.h>
-#include <iostream>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#include <iostream>
 
 #include "../context/connection.hpp"
 #include "../event_loop/event_loop.hpp"
@@ -14,11 +15,11 @@
 #include "../router/router.hpp"
 
 class Server {
-public:
+ public:
   Server(int port_, const Router &router_, Logger &logger_);
   void run();
 
-private:
+ private:
   void createSocket();
   void bindSocket();
   void listenSocket();

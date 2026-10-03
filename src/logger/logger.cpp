@@ -1,8 +1,8 @@
 #include "logger.hpp"
 
-#include "../utils/common.hpp"
-
 #include <iostream>
+
+#include "../utils/common.hpp"
 
 Logger::Logger() { sinks.push_back(new Terminal()); }
 
@@ -44,18 +44,18 @@ void Logger::log(Log::Level level, const std::string &message) {
 void Terminal::log(const LogRecord &record) {
   std::string levelStr;
   switch (record.level) {
-  case Log::Level::INFO:
-    levelStr = "INFO";
-    break;
-  case Log::Level::DEBUG:
-    levelStr = "DEBUG";
-    break;
-  case Log::Level::ERROR:
-    levelStr = "ERROR";
-    break;
-  case Log::Level::WARN:
-    levelStr = "WARN";
-    break;
+    case Log::Level::INFO:
+      levelStr = "INFO";
+      break;
+    case Log::Level::DEBUG:
+      levelStr = "DEBUG";
+      break;
+    case Log::Level::ERROR:
+      levelStr = "ERROR";
+      break;
+    case Log::Level::WARN:
+      levelStr = "WARN";
+      break;
   }
 
   std::cout << "[" << record.timestamp << "] "

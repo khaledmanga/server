@@ -8,11 +8,11 @@
 #include "../router/router.hpp"
 
 class Connection {
-public:
+ public:
   Connection(int fd_, const Router &router_, Logger &logger_);
   void handle_read();
 
-private:
+ private:
   int fd;
   const Router &router;
   Logger &logger;

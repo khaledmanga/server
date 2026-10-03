@@ -4,7 +4,7 @@
 #include <iostream>
 
 class RequestLine {
-public:
+ public:
   std::string method;
   std::string target;
   std::string protocol;
@@ -15,7 +15,7 @@ public:
 };
 
 class Header {
-public:
+ public:
   std::string host;
   std::string content_type;
   int content_length = 0;
@@ -24,14 +24,14 @@ public:
 };
 
 class Body {
-public:
+ public:
   std::string value;
 
   friend std::ostream &operator<<(std::ostream &os, const Body &b);
 };
 
 class Request {
-public:
+ public:
   RequestLine request_line;
   Header header;
   Body body;

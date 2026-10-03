@@ -13,7 +13,7 @@
 using Handler = std::function<void(Request &, Response &, Logger &)>;
 
 class Router {
-public:
+ public:
   template <typename Callback>
   void get(const std::string &path, Callback &&handler) {
     this->add("GET", path, adaptHandler(std::forward<Callback>(handler)));
@@ -27,7 +27,7 @@ public:
   bool handle(Request &request, Response &response,
               Logger *logger = nullptr) const;
 
-private:
+ private:
   struct Route {
     std::string method;
     std::string path;

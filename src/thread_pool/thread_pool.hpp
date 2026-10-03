@@ -8,14 +8,14 @@
 #include <vector>
 
 class ThreadPool {
-private:
+ private:
   std::vector<std::thread> workers;
   std::deque<std::function<void()>> tasks;
   std::condition_variable cv;
   std::mutex lock;
   bool shutting_down = false;
 
-public:
+ public:
   ThreadPool(size_t numThreads);
   ~ThreadPool();
   ThreadPool(const ThreadPool &) = delete;

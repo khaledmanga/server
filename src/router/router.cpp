@@ -22,7 +22,7 @@ std::string normalizePath(const std::string &target) {
 
   return path;
 }
-} // namespace
+}  // namespace
 
 void Router::add(const std::string &method, const std::string &path,
                  Handler handler) {
