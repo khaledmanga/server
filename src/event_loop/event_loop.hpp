@@ -1,8 +1,8 @@
 #pragma once
 
+#include <functional>
 #include <sys/epoll.h>
 #include <unistd.h>
-#include <functional>
 
 const int MAX_EVENTS = 64;
 

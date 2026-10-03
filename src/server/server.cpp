@@ -70,7 +70,8 @@ void Server::run() {
   std::cout << "Server is listening on port " << this->port << std::endl;
 
   this->event_loop.run(
-      this->server_fd, 
-      [this]() { this->acceptClient(); },
+      this->server_fd, [this]() { this->acceptClient(); },
       [this](int fd) { this->handleClient(fd); });
 }
+
+void Server::use(ThreadPool &thread_pool) { this->thread_pool = thread_pool; }

@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "../thread_pool/thread_pool.hpp"
 #include "../context/connection.hpp"
 #include "../event_loop/event_loop.hpp"
 #include "../http_parser/http_parser.hpp"
@@ -16,6 +17,7 @@ class Server {
 public:
   Server(int port_, const Router &router_);
   void run();
+  void use(ThreadPool &thread_pool);
 
 private:
   void createSocket();
@@ -25,6 +27,7 @@ private:
   void acceptClient();
 
   EventLoop event_loop;
+  ThreadPool thread_pool;
   int port;
   int server_fd;
   const Router &router;

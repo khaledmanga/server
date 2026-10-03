@@ -7,8 +7,9 @@ add_executable(
 	./http_parser/http_parser.cpp 
 	./request/request.cpp
   	./router/router.cpp
-  .	./response/response.cpp
+  	./response/response.cpp
 	./utils/common.cpp
 	./constant/common.cpp
 	./event_loop/event_loop.cpp
+	./thread_pool/thread_pool.cpp
 )
