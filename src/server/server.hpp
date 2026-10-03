@@ -10,14 +10,13 @@
 #include "../context/connection.hpp"
 #include "../event_loop/event_loop.hpp"
 #include "../http_parser/http_parser.hpp"
+#include "../logger/logger.hpp"
 #include "../router/router.hpp"
-#include "../thread_pool/thread_pool.hpp"
 
 class Server {
 public:
-  Server(int port_, const Router &router_);
+  Server(int port_, const Router &router_, Logger &logger_);
   void run();
-  void use(ThreadPool &thread_pool);
 
 private:
   void createSocket();
@@ -27,7 +26,7 @@ private:
   void acceptClient();
 
   EventLoop event_loop;
-  ThreadPool thread_pool;
+  Logger &logger;
   int port;
   int server_fd;
   const Router &router;

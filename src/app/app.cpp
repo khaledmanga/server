@@ -2,17 +2,19 @@
 
 #include "../server/server.hpp"
 
-#include <utility>
+#include <stdexcept>
 
-void App::get(const std::string &path, Handler handler) {
-  this->router.get(path, std::move(handler));
-}
+void App::use(Router &router) { this->router = &router; }
 
-void App::post(const std::string &path, Handler handler) {
-  this->router.post(path, std::move(handler));
-}
+void App::use(ThreadPool &threadPool) { this->threadPool = &threadPool; }
+
+void App::use(Logger &logger) { this->logger = &logger; }
 
 void App::listen(int port) {
-  Server server(port, this->router);
+  if (this->router == nullptr || this->logger == nullptr) {
+    throw std::logic_error("App requires a Router and Logger before listen()");
+  }
+
+  Server server(port, *this->router, *this->logger);
   server.run();
 }

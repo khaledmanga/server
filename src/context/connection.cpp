@@ -3,8 +3,8 @@
 #include <cerrno>
 #include <iostream>
 
-Connection::Connection(int fd_, const Router &router_)
-    : fd(fd_), router(router_) {}
+Connection::Connection(int fd_, const Router &router_, Logger &logger_)
+    : fd(fd_), router(router_), logger(logger_) {}
 
 void Connection::handle_read() {
   this->read_buffer.resize(4096);
@@ -21,7 +21,7 @@ void Connection::handle_read() {
 
   Response response;
   if (state == HttpRequestState::Completed) {
-    this->router.handle(this->request, response);
+    this->router.handle(this->request, response, &this->logger);
   } else {
     response.status(HTTP::StatusCode::BAD_REQUEST).send("Bad Request");
   }

@@ -7,6 +7,7 @@ add_executable(
 	./http_parser/http_parser.cpp 
 	./request/request.cpp
   	./router/router.cpp
+	./logger/logger.cpp
   	./response/response.cpp
 	./utils/common.cpp
 	./constant/common.cpp

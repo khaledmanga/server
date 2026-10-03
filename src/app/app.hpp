@@ -2,12 +2,17 @@
 
 #include "../router/router.hpp"
 
+class ThreadPool;
+
 class App {
 public:
-  void get(const std::string &path, Handler handler);
-  void post(const std::string &path, Handler handler);
+  void use(Router &router);
+  void use(ThreadPool &threadPool);
+  void use(Logger &logger);
   void listen(int port);
 
 private:
-  Router router;
+  const Router *router = nullptr;
+  const ThreadPool *threadPool = nullptr;
+  Logger *logger = nullptr;
 };

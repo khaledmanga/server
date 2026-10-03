@@ -1,7 +1,7 @@
 #include "server.hpp"
 
-Server::Server(int port_, const Router &router_)
-    : port(port_), server_fd(-1), router(router_) {}
+Server::Server(int port_, const Router &router_, Logger &logger_)
+    : logger(logger_), port(port_), server_fd(-1), router(router_) {}
 
 void Server::createSocket() {
   int server_fd_ = socket(AF_INET, SOCK_STREAM, 0);
@@ -54,7 +54,7 @@ void Server::acceptClient() {
 }
 
 void Server::handleClient(int fd) {
-  Connection connection(fd, this->router);
+  Connection connection(fd, this->router, this->logger);
 
   connection.handle_read();
 
@@ -73,5 +73,3 @@ void Server::run() {
       this->server_fd, [this]() { this->acceptClient(); },
       [this](int fd) { this->handleClient(fd); });
 }
-
-void Server::use(ThreadPool &thread_pool) { this->thread_pool = thread_pool; }
