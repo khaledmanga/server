@@ -5,7 +5,7 @@
 #include <thread>
 #include <vector>
 
-#include "../constant/common.hpp"
+#include "../constant/common.h"
 
 struct LogRecord {
   Log::Level level;

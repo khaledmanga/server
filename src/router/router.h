@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "../logger/logger.hpp"
-#include "../request/request.hpp"
-#include "../response/response.hpp"
+#include "../logger/logger.h"
+#include "../request/request.h"
+#include "../response/response.h"
 
 using Handler = std::function<void(Request &, Response &, Logger &)>;
 

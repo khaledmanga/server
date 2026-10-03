@@ -1,16 +1,3 @@
-add_executable(
-	server 
-	main.cpp 
-	./app/app.cpp
-	./server/server.cpp 
-	./context/connection.cpp 
-	./http_parser/http_parser.cpp 
-	./request/request.cpp
-  	./router/router.cpp
-	./logger/logger.cpp
-  	./response/response.cpp
-	./utils/common.cpp
-	./constant/common.cpp
-	./event_loop/event_loop.cpp
-	./thread_pool/thread_pool.cpp
-)
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS *.cc)
+
+add_executable(server ${SOURCES})

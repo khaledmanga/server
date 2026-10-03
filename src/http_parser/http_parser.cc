@@ -1,6 +1,6 @@
-#include "http_parser.hpp"
+#include "http_parser.h"
 
-#include "../utils/common.hpp"
+#include "../utils/common.h"
 
 HttpRequestState httpParser(Request &request,
                             HttpRequestState &httpRequestState,

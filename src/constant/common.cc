@@ -1,4 +1,4 @@
-#include "common.hpp"
+#include "common.h"
 
 std::string to_string(HttpMethod method) {
   switch (method) {

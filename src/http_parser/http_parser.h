@@ -4,9 +4,9 @@
 #include <iostream>
 #include <sstream>
 
-#include "../constant/common.hpp"
-#include "../request/request.hpp"
-#include "../utils/common.hpp"
+#include "../constant/common.h"
+#include "../request/request.h"
+#include "../utils/common.h"
 
 HttpRequestState httpParser(Request &request,
                             HttpRequestState &httpRequestState,

@@ -1,4 +1,4 @@
-#include "server.hpp"
+#include "server.h"
 
 Server::Server(int port_, const Router &router_, Logger &logger_)
     : logger(logger_), port(port_), server_fd(-1), router(router_) {}

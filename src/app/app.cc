@@ -1,6 +1,6 @@
-#include "app.hpp"
+#include "app.h"
 
-#include "../server/server.hpp"
+#include "../server/server.h"
 
 void App::use(Router &router) { this->router = &router; }
 

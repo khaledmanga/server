@@ -1,4 +1,4 @@
-#include "request.hpp"
+#include "request.h"
 
 std::ostream &operator<<(std::ostream &os, const RequestLine &rl) {
   os << "Method: " << rl.method << std::endl

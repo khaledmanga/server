@@ -1,8 +1,8 @@
-#include "logger.hpp"
+#include "logger.h"
 
 #include <iostream>
 
-#include "../utils/common.hpp"
+#include "../utils/common.h"
 
 Logger::Logger() { sinks.push_back(new Terminal()); }
 

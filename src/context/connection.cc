@@ -1,4 +1,4 @@
-#include "connection.hpp"
+#include "connection.h"
 
 #include <cerrno>
 
@@ -14,8 +14,8 @@ void Connection::handle_read() {
   read_buffer.resize(static_cast<std::size_t>(bytes));
 
   Response response;
-  if (httpParser(request, HttpRequestState::RequestLine, read_buffer) ==
-      HttpRequestState::Completed) {
+  HttpRequestState state = HttpRequestState::RequestLine;
+  if (httpParser(request, state, read_buffer) == HttpRequestState::Completed) {
     router.handle(request, response, &logger);
   } else {
     response.status(HTTP::StatusCode::BAD_REQUEST).send("Bad Request");

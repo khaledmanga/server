@@ -2,10 +2,10 @@
 
 #include <sys/socket.h>
 
-#include "../http_parser/http_parser.hpp"
-#include "../logger/logger.hpp"
-#include "../response/response.hpp"
-#include "../router/router.hpp"
+#include "../http_parser/http_parser.h"
+#include "../logger/logger.h"
+#include "../response/response.h"
+#include "../router/router.h"
 
 class Connection {
  public:

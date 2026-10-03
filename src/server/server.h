@@ -8,11 +8,11 @@
 
 #include <iostream>
 
-#include "../context/connection.hpp"
-#include "../event_loop/event_loop.hpp"
-#include "../http_parser/http_parser.hpp"
-#include "../logger/logger.hpp"
-#include "../router/router.hpp"
+#include "../context/connection.h"
+#include "../event_loop/event_loop.h"
+#include "../http_parser/http_parser.h"
+#include "../logger/logger.h"
+#include "../router/router.h"
 
 class Server {
  public:
