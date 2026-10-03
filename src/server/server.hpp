@@ -7,11 +7,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "../thread_pool/thread_pool.hpp"
 #include "../context/connection.hpp"
 #include "../event_loop/event_loop.hpp"
 #include "../http_parser/http_parser.hpp"
 #include "../router/router.hpp"
+#include "../thread_pool/thread_pool.hpp"
 
 class Server {
 public:
