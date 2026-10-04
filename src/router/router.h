@@ -12,16 +12,11 @@ using Handler = std::function<void(Request &, Response &, Logger &)>;
 
 class Router {
  public:
-  void get(const std::string &path, Handler handler) {
-    add("GET", path, std::move(handler));
-  }
+  void get(const std::string &path, Handler handler) { add("GET", path, std::move(handler)); }
 
-  void post(const std::string &path, Handler handler) {
-    add("POST", path, std::move(handler));
-  }
+  void post(const std::string &path, Handler handler) { add("POST", path, std::move(handler)); }
 
-  bool handle(Request &request, Response &response,
-              Logger *logger = nullptr) const;
+  bool handle(Request &request, Response &response, Logger *logger = nullptr) const;
 
  private:
   struct Route {

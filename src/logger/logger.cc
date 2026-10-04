@@ -12,21 +12,13 @@ Logger::~Logger() {
   }
 }
 
-void Logger::Info(const std::string &message) {
-  log(Log::Level::INFO, message);
-}
+void Logger::Info(const std::string &message) { log(Log::Level::INFO, message); }
 
-void Logger::Debug(const std::string &message) {
-  log(Log::Level::DEBUG, message);
-}
+void Logger::Debug(const std::string &message) { log(Log::Level::DEBUG, message); }
 
-void Logger::Error(const std::string &message) {
-  log(Log::Level::ERROR, message);
-}
+void Logger::Error(const std::string &message) { log(Log::Level::ERROR, message); }
 
-void Logger::Warn(const std::string &message) {
-  log(Log::Level::WARN, message);
-}
+void Logger::Warn(const std::string &message) { log(Log::Level::WARN, message); }
 
 void Logger::log(Log::Level level, const std::string &message) {
   LogRecord record;

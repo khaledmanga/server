@@ -2,9 +2,7 @@
 
 #include "../utils/common.h"
 
-HttpRequestState httpParser(Request &request,
-                            HttpRequestState &httpRequestState,
-                            std::string &raw_request) {
+HttpRequestState httpParser(Request &request, HttpRequestState &httpRequestState, std::string &raw_request) {
   if (httpRequestState == HttpRequestState::RequestLine) {
     auto clrf = raw_request.find("\r\n");
 
@@ -33,10 +31,8 @@ HttpRequestState httpParser(Request &request,
     auto dot = protocol_version.find('.');
 
     request.request_line.protocol = protocol_version.substr(0, slash);
-    request.request_line.major_version =
-        std::stoi(protocol_version.substr(slash + 1, dot - slash - 1));
-    request.request_line.minor_version =
-        std::stoi(protocol_version.substr(dot + 1));
+    request.request_line.major_version = std::stoi(protocol_version.substr(slash + 1, dot - slash - 1));
+    request.request_line.minor_version = std::stoi(protocol_version.substr(dot + 1));
 
     httpRequestState = HttpRequestState::Headers;
 
@@ -88,8 +84,7 @@ HttpRequestState httpParser(Request &request,
 
   if (httpRequestState == HttpRequestState::Body) {
     if (request.header.content_length > 0) {
-      const std::size_t content_length =
-          static_cast<std::size_t>(request.header.content_length);
+      const std::size_t content_length = static_cast<std::size_t>(request.header.content_length);
       if (raw_request.size() < content_length) {
         return httpRequestState;
       }

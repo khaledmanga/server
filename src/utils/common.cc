@@ -6,8 +6,7 @@
 #include <sstream>
 
 bool isValidMethodHttp(const std::string &http_method) {
-  if (http_method == to_string(HttpMethod::GET) ||
-      http_method == to_string(HttpMethod::POST)) {
+  if (http_method == to_string(HttpMethod::GET) || http_method == to_string(HttpMethod::POST)) {
     return true;
   }
 
@@ -15,8 +14,7 @@ bool isValidMethodHttp(const std::string &http_method) {
 }
 
 std::string getCurrentTime() {
-  const std::time_t now =
-      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+  const std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
   std::tm localTime{};
   localtime_r(&now, &localTime);
   std::ostringstream timestamp;

@@ -1,75 +1,118 @@
 #include "server.h"
 
-Server::Server(int port_, const Router &router_, Logger &logger_)
-    : logger(logger_), port(port_), server_fd(-1), router(router_) {}
+#include <sys/signalfd.h>
 
-void Server::createSocket() {
-  int server_fd_ = socket(AF_INET, SOCK_STREAM, 0);
-  int opt = 1;
+#include <cerrno>
+#include <exception>
+#include <fcntl.h>
+#include <system_error>
 
-  if (server_fd_ == -1) {
-    perror("Socket create");
-    return;
+#include "../thread_pool/thread_pool.h"
+
+namespace {
+int check(int rc, const char *what) {
+  if (rc == -1) throw std::system_error(errno, std::generic_category(), what);
+  return rc;
+}
+}  // namespace
+
+Server::Server(int port_, const Router &router_, Logger &logger_, ThreadPool &thread_pool_)
+    : logger(logger_), thread_pool(thread_pool_), port(port_), server_fd(-1), signal_fd(-1), router(router_) {}
+
+void Server::setupSignals() {
+  sigset_t set;
+  sigemptyset(&set);
+  sigaddset(&set, SIGINT);
+  sigaddset(&set, SIGTERM);
+
+  if (int err = pthread_sigmask(SIG_BLOCK, &set, nullptr)) {
+    throw std::system_error(err, std::generic_category(), "pthread_sigmask");
   }
-
-  this->server_fd = server_fd_;
-
-  setsockopt(this->server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+  signal_fd = check(signalfd(-1, &set, SFD_NONBLOCK | SFD_CLOEXEC), "signalfd");
 }
 
-void Server::bindSocket() {
-  sockaddr_in addr{};
+void Server::setupSocket() {
+  server_fd = check(socket(AF_INET, SOCK_STREAM, 0), "socket");
 
+  int opt = 1;
+  check(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)), "setsockopt");
+
+  int flags = fcntl(server_fd, F_GETFL, 0);
+  check(fcntl(server_fd, F_SETFL, flags | O_NONBLOCK), "fcntl");
+
+  sockaddr_in addr{};
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = INADDR_ANY;
-  addr.sin_port = htons(this->port);
+  addr.sin_port = htons(port);
 
-  if (bind(this->server_fd, (sockaddr *)&addr, sizeof(addr)) == -1) {
-    perror("Bind socket");
-    return;
-  }
-}
-
-void Server::listenSocket() {
-  if (listen(this->server_fd, SOMAXCONN) == -1) {
-    perror("Listen socket");
-    close(this->server_fd);
-    return;
-  }
+  check(bind(server_fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)), "bind");
+  check(listen(server_fd, SOMAXCONN), "listen");
 }
 
 void Server::acceptClient() {
-  sockaddr_in client_addr{};
-  socklen_t client_len = sizeof(client_addr);
-
-  int client_fd =
-      accept(this->server_fd, (sockaddr *)&client_addr, &client_len);
-
+  int client_fd = accept(server_fd, nullptr, nullptr);
   if (client_fd == -1) {
     perror("Accept socket");
     return;
   }
 
-  this->event_loop.add_event(client_fd);
+  int flags = fcntl(client_fd, F_GETFL, 0);
+  check(fcntl(client_fd, F_SETFL, flags | O_NONBLOCK), "fcntl");
+
+  event_loop.add_event(client_fd);
+  pending_clients.insert(client_fd);
 }
 
 void Server::handleClient(int fd) {
-  Connection connection(fd, this->router, this->logger);
+  if (fd == signal_fd) {
+    signalfd_siginfo info{};
+    if (read(signal_fd, &info, sizeof(info)) != sizeof(info)) {
+      throw std::system_error(errno, std::generic_category(), "read signalfd");
+    }
+    std::cout << "Server is shutting down..." << std::endl;
+    event_loop.remove_event(server_fd);
+    event_loop.stop();
+    return;
+  }
 
-  connection.handle_read();
+  pending_clients.erase(fd);
+  event_loop.remove_event(fd);
+  thread_pool.enqueue([this, fd]() {
+    try {
+      Connection(fd, router, logger).handle_read();
+    } catch (const std::exception &e) {
+      logger.Error(std::string("Client handling failed: ") + e.what());
+    }
+    close(fd);
+  });
+}
 
-  this->event_loop.remove_event(fd);
-  close(fd);
+void Server::gracefulShutdown() {
+  for (int *fd : {&server_fd, &signal_fd}) {
+    if (*fd != -1) {
+      close(*fd);
+      *fd = -1;
+    }
+  }
+  for (int fd : pending_clients) {
+    event_loop.remove_event(fd);
+    close(fd);
+  }
+  pending_clients.clear();
+  thread_pool.shutdown();
 }
 
 void Server::run() {
-  createSocket();
-  bindSocket();
-  listenSocket();
+  try {
+    setupSignals();
+    setupSocket();
+    event_loop.add_event(signal_fd);
 
-  std::cout << "Server is listening on port " << this->port << std::endl;
-
-  this->event_loop.run(
-      this->server_fd, [this]() { this->acceptClient(); },
-      [this](int fd) { this->handleClient(fd); });
+    std::cout << "Server is listening on port " << port << std::endl;
+    event_loop.run(server_fd, [this]() { acceptClient(); }, [this](int fd) { handleClient(fd); });
+  } catch (...) {
+    gracefulShutdown();
+    throw;
+  }
+  gracefulShutdown();
 }

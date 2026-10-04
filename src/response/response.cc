@@ -16,8 +16,7 @@ Response &Response::send(const std::string &value) {
 
 std::string Response::serialize() const {
   std::ostringstream response;
-  response << "HTTP/1.1 " << static_cast<int>(this->status_code) << ' '
-           << HTTP::getReasonPhrase(this->status_code) << "\r\n"
+  response << "HTTP/1.1 " << static_cast<int>(this->status_code) << ' ' << HTTP::getReasonPhrase(this->status_code) << "\r\n"
            << "Content-Type: text/plain; charset=utf-8\r\n"
            << "Content-Length: " << this->body.size() << "\r\n"
            << "Connection: close\r\n\r\n"

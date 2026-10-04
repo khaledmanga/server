@@ -14,13 +14,9 @@ std::string normalizePath(const std::string &target) {
 }
 }  // namespace
 
-void Router::add(const std::string &method, const std::string &path,
-                 Handler handler) {
-  routes.push_back({method, normalizePath(path), std::move(handler)});
-}
+void Router::add(const std::string &method, const std::string &path, Handler handler) { routes.push_back({method, normalizePath(path), std::move(handler)}); }
 
-bool Router::handle(Request &request, Response &response,
-                    Logger *logger) const {
+bool Router::handle(Request &request, Response &response, Logger *logger) const {
   static Logger fallbackLogger;
   Logger &log = logger ? *logger : fallbackLogger;
   const std::string path = normalizePath(request.request_line.target);

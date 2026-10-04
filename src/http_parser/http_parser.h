@@ -8,6 +8,4 @@
 #include "../request/request.h"
 #include "../utils/common.h"
 
-HttpRequestState httpParser(Request &request,
-                            HttpRequestState &httpRequestState,
-                            std::string &raw_request);
+HttpRequestState httpParser(Request &request, HttpRequestState &httpRequestState, std::string &raw_request);

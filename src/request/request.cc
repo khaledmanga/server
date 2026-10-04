@@ -3,16 +3,13 @@
 std::ostream &operator<<(std::ostream &os, const RequestLine &rl) {
   os << "Method: " << rl.method << std::endl
      << "Target: " << rl.target << std::endl
-     << "Protocol: " << rl.protocol << "/" << rl.major_version << "."
-     << rl.minor_version;
+     << "Protocol: " << rl.protocol << "/" << rl.major_version << "." << rl.minor_version;
 
   return os;
 }
 
 std::ostream &operator<<(std::ostream &os, const Header &h) {
-  os << "Host: " << h.host << std::endl
-     << "Content-Type: " << h.content_type << std::endl
-     << "Content-Length: " << h.content_length;
+  os << "Host: " << h.host << std::endl << "Content-Type: " << h.content_type << std::endl << "Content-Length: " << h.content_length;
 
   return os;
 }

@@ -13,6 +13,6 @@ class App {
 
  private:
   const Router *router = nullptr;
-  const ThreadPool *threadPool = nullptr;
+  ThreadPool *threadPool = nullptr;
   Logger *logger = nullptr;
 };

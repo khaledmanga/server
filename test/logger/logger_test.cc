@@ -34,7 +34,5 @@ TEST(LoggerTest, Warn) {
 }
 
 TEST(LoggerTest, LogWritesRequestedLevel) {
-  expectLog(
-      [](Logger &l, const std::string &m) { l.log(Log::Level::DEBUG, m); },
-      "DEBUG");
+  expectLog([](Logger &l, const std::string &m) { l.log(Log::Level::DEBUG, m); }, "DEBUG");
 }

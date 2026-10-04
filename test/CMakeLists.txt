@@ -7,6 +7,8 @@ add_executable(
   logger/logger_test.cc
   request/request_test.cc
   response/response_test.cc
+  thread_pool/thread_pool_test.cc
+  event_loop/event_loop_test.cc
   ${SRC_SOURCES}
 )
 target_link_libraries(unit_test GTest::gtest_main)

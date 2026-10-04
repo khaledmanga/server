@@ -4,6 +4,10 @@
 #include <utility>
 
 ThreadPool::ThreadPool(size_t numThreads) {
+  if (numThreads == 0) {
+    throw std::invalid_argument("Thread pool must have at least one worker");
+  }
+
   for (size_t i = 0; i < numThreads; ++i) {
     this->workers.emplace_back([this] { this->worker(); });
   }
@@ -15,8 +19,7 @@ void ThreadPool::enqueue(std::function<void()> task) {
   {
     std::lock_guard<std::mutex> lock(this->lock);
     if (this->shutting_down) {
-      throw std::runtime_error(
-          "Cannot enqueue a task after thread pool shutdown");
+      throw std::runtime_error("Cannot enqueue a task after thread pool shutdown");
     }
     this->tasks.push_back(std::move(task));
   }
@@ -30,8 +33,7 @@ void ThreadPool::worker() {
 
     {
       std::unique_lock<std::mutex> lock(this->lock);
-      this->cv.wait(
-          lock, [this] { return !this->tasks.empty() || this->shutting_down; });
+      this->cv.wait(lock, [this] { return !this->tasks.empty() || this->shutting_down; });
       if (this->tasks.empty()) {
         return;
       }
