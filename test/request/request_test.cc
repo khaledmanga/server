@@ -24,17 +24,16 @@ TEST(RequestTest, StreamsRequestLineFields) {
 
 TEST(RequestTest, StreamsHeaderFields) {
   Header header;
-  header.host = "example.com";
-  header.content_type = "text/plain";
-  header.content_length = 5;
+  header.fields["Host"] = "example.com";
+  header.fields["Content-Type"] = "text/plain";
+  header.fields["Content-Length"] = "5";
 
   std::ostringstream output;
   output << header;
 
-  EXPECT_EQ(output.str(),
-            "Host: example.com\n"
-            "Content-Type: text/plain\n"
-            "Content-Length: 5");
+  EXPECT_NE(output.str().find("Host: example.com\n"), std::string::npos);
+  EXPECT_NE(output.str().find("Content-Type: text/plain\n"), std::string::npos);
+  EXPECT_NE(output.str().find("Content-Length: 5\n"), std::string::npos);
 }
 
 TEST(RequestTest, StreamsBodyValue) {
@@ -54,20 +53,21 @@ TEST(RequestTest, StreamsCompleteRequest) {
   request.request_line.protocol = "HTTP";
   request.request_line.major_version = 1;
   request.request_line.minor_version = 0;
-  request.header.host = "example.com";
-  request.header.content_type = "text/plain";
-  request.header.content_length = 2;
+  request.header.fields["Host"] = "example.com";
+  request.header.fields["Content-Type"] = "text/plain";
+  request.header.fields["Content-Length"] = "2";
   request.body.value = "ok";
 
   std::ostringstream output;
   output << request;
 
-  EXPECT_EQ(output.str(),
-            "Method: POST\n"
-            "Target: /items\n"
-            "Protocol: HTTP/1.0\n"
-            "Host: example.com\n"
-            "Content-Type: text/plain\n"
-            "Content-Length: 2\n"
-            "Body: ok");
+  const std::string serialized = output.str();
+  EXPECT_NE(serialized.find("Method: POST\n"
+                            "Target: /items\n"
+                            "Protocol: HTTP/1.0\n"),
+            std::string::npos);
+  EXPECT_NE(serialized.find("Host: example.com\n"), std::string::npos);
+  EXPECT_NE(serialized.find("Content-Type: text/plain\n"), std::string::npos);
+  EXPECT_NE(serialized.find("Content-Length: 2\n"), std::string::npos);
+  EXPECT_NE(serialized.find("Body: ok"), std::string::npos);
 }

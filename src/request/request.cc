@@ -9,7 +9,9 @@ std::ostream &operator<<(std::ostream &os, const RequestLine &rl) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Header &h) {
-  os << "Host: " << h.host << std::endl << "Content-Type: " << h.content_type << std::endl << "Content-Length: " << h.content_length;
+  for(auto const& [key, value]: h.fields) {
+    os << key << ": " << value << std::endl;
+  }
 
   return os;
 }

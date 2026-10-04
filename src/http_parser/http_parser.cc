@@ -64,13 +64,7 @@ HttpRequestState httpParser(Request &request, HttpRequestState &httpRequestState
           value.erase(0, 1);
         }
 
-        if (key == "Host") {
-          request.header.host = value;
-        } else if (key == "Content-Type") {
-          request.header.content_type = value;
-        } else if (key == "Content-Length") {
-          request.header.content_length = std::stoi(value);
-        }
+        request.header.fields[key] = value;
       }
 
       start = crlf + 2;
@@ -83,12 +77,15 @@ HttpRequestState httpParser(Request &request, HttpRequestState &httpRequestState
   }
 
   if (httpRequestState == HttpRequestState::Body) {
-    if (request.header.content_length > 0) {
-      const std::size_t content_length = static_cast<std::size_t>(request.header.content_length);
+    const auto content_length_header = request.header.fields.find("Content-Length");
+    const std::size_t content_length = content_length_header == request.header.fields.end() ? 0 : std::stoul(content_length_header->second);
+
+    if (content_length > 0) {
       if (raw_request.size() < content_length) {
         return httpRequestState;
       }
 
+      request.body.content_type = request.header.fields["Content-Type"];
       request.body.value = raw_request.substr(0, content_length);
       raw_request.erase(0, content_length);
     }

@@ -18,9 +18,7 @@ class RequestLine {
 
 class Header {
  public:
-  std::string host;
-  std::string content_type;
-  int content_length = 0;
+  std::unordered_map<std::string, std::string> fields;
 
   friend std::ostream &operator<<(std::ostream &os, const Header &h);
 };
@@ -28,6 +26,7 @@ class Header {
 class Body {
  public:
   std::string value;
+  std::string content_type;
 
   friend std::ostream &operator<<(std::ostream &os, const Body &b);
 };
