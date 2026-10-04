@@ -11,6 +11,7 @@ class Connection {
  public:
   Connection(int fd_, const Router &router_, Logger &logger_);
   void handle_read();
+  void handle_write();
 
  private:
   int fd;

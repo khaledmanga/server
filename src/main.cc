@@ -13,7 +13,6 @@ int main() {
 
   router.get("/", [](Request &request, Response &response, Logger &logger) {
     logger.Info("Handling GET /");
-    std::cout << request.body << std::endl;
     response.json(json::parse("{\"message\": \"Hello World!\"}"));
   });
 

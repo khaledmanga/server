@@ -6,7 +6,8 @@
 #include <sstream>
 
 bool isValidMethodHttp(const std::string &http_method) {
-  if (http_method == to_string(HttpMethod::GET) || http_method == to_string(HttpMethod::POST) || http_method == to_string(HttpMethod::PUT) || http_method == to_string(HttpMethod::DELETE)) {
+  if (http_method == to_string(HttpMethod::GET) || http_method == to_string(HttpMethod::POST) || http_method == to_string(HttpMethod::PUT) ||
+      http_method == to_string(HttpMethod::DELETE)) {
     return true;
   }
 

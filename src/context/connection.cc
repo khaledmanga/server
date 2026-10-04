@@ -13,14 +13,31 @@ void Connection::handle_read() {
   read_buffer.resize(static_cast<std::size_t>(bytes));
 
   Response response;
-  HttpRequestState state = HttpRequestState::RequestLine;
-  if (httpParser(request, state, read_buffer) == HttpRequestState::Completed) {
-    router.handle(request, response, &logger);
-  } else {
-    response.status(HTTP::StatusCode::BAD_REQUEST).send("Bad Request");
+  HttpRequestState state = HttpRequestState::Init;
+  while (httpParser(request, state, read_buffer) != HttpRequestState::Completed) {
+    if (state == HttpRequestState::RequestLine) {
+      if (!isValidMethodHttp(request.request_line.method)) {
+        response.status(HTTP::StatusCode::NOT_ALLOWED).send("Method Not Allowed");
+
+        this->write_buffer = response.serialize();
+        this->handle_write();
+
+        return;
+      }
+    }
   }
 
-  write_buffer = response.serialize();
+  router.handle(request, response, &logger);
+
+  this->write_buffer = response.serialize();
+  this->handle_write();
+}
+
+void Connection::handle_write() {
+  if (write_buffer.empty()) {
+    return;
+  }
+
   for (std::size_t sent = 0; sent < write_buffer.size();) {
     const ssize_t n = send(fd, write_buffer.data() + sent, write_buffer.size() - sent, 0);
     if (n > 0) {
@@ -29,4 +46,6 @@ void Connection::handle_read() {
       return;
     }
   }
+
+  write_buffer.clear();
 }

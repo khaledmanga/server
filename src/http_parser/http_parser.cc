@@ -3,6 +3,10 @@
 #include "../utils/common.h"
 
 HttpRequestState httpParser(Request &request, HttpRequestState &httpRequestState, std::string &raw_request) {
+  if (httpRequestState == HttpRequestState::Init) {
+    httpRequestState = HttpRequestState::RequestLine;
+  }
+
   if (httpRequestState == HttpRequestState::RequestLine) {
     auto clrf = raw_request.find("\r\n");
 
