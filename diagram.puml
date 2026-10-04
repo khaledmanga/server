@@ -1,0 +1,237 @@
+@startuml
+' ===== Style =====
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam nodesep 70
+skinparam ranksep 90
+skinparam dpi 130
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam ArrowColor #555555
+skinparam ClassBorderColor #666666
+skinparam ClassBackgroundColor #FAFAFA
+skinparam PackageBorderColor #AAAAAA
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageFontStyle bold
+hide empty members
+
+' ===== Application =====
+package "Application" #F3F0FF {
+  class App {
+    - router : Router*
+    - threadPool : ThreadPool*
+    - logger : Logger*
+    --
+    + use(router : Router&)
+    + use(threadPool : ThreadPool&)
+    + use(logger : Logger&)
+    + listen(port : int)
+  }
+}
+
+' ===== Server runtime =====
+package "Server runtime" #E8F6F1 {
+  class Server {
+    - port : int
+    - server_fd : int
+    - signal_fd : int
+    - event_loop : EventLoop
+    - pending_clients : unordered_set<int>
+    --
+    + run()
+    - setupSignals()
+    - setupSocket()
+    - acceptClient()
+    - handleClient(fd : int)
+    - gracefulShutdown()
+  }
+
+  class EventLoop {
+    - epoll_fd : int
+    - wake_fd : int
+    - running : atomic<bool>
+    --
+    + run(server_fd : int, accept_handler, client_handler)
+    + add_event(fd : int)
+    + remove_event(fd : int)
+    + update_event(fd : int)
+    + stop()
+  }
+
+  class ThreadPool {
+    - workers : vector<thread>
+    - tasks : deque<function<void()>>
+    - shutting_down : bool
+    --
+    + enqueue(task)
+    + worker()
+    + shutdown()
+  }
+
+  class Connection {
+    - fd : int
+    - read_buffer : string
+    - write_buffer : string
+    --
+    + handle_read()
+  }
+}
+
+' ===== Routing =====
+package "Routing" #FDF1EC {
+  class Router {
+    - routes : vector<Route>
+    --
+    + get(path : string, handler : Handler)
+    + post(path : string, handler : Handler)
+    + handle(req : Request&, res : Response&, logger : Logger*) : bool
+    - add(method : string, path : string, handler : Handler)
+  }
+
+  class Route <<struct>> {
+    + method : string
+    + path : string
+    + handler : Handler
+  }
+}
+
+' ===== HTTP =====
+package "HTTP" #EAF3FB {
+  class httpParser <<function>> {
+    + httpParser(req : Request&, state : HttpRequestState&, raw : string&) : HttpRequestState
+  }
+
+  enum HttpRequestState {
+    RequestLine
+    Headers
+    Body
+    Completed
+  }
+
+  class Request {
+    + request_line : RequestLine
+    + header : Header
+    + body : Body
+  }
+
+  class RequestLine {
+    + method : string
+    + target : string
+    + protocol : string
+    + major_version : int
+    + minor_version : int
+  }
+
+  class Header {
+    + host : string
+    + content_type : string
+    + content_length : int
+  }
+
+  class Body {
+    + value : string
+  }
+
+  class Response {
+    - status_code : StatusCode
+    - body : string
+    --
+    + status(code : StatusCode) : Response&
+    + send(value : string) : Response&
+    + serialize() : string
+  }
+
+  enum StatusCode {
+    OK
+    CREATED
+    NO_CONTENT
+    MOVED_PERMANENTLY
+    FOUND
+    BAD_REQUEST
+    UNAUTHORIZED
+    FORBIDDEN
+    NOT_FOUND
+    INTERNAL_SERVER_ERROR
+    NOT_IMPLEMENTED
+    BAD_GATEWAY
+  }
+}
+
+' ===== Logging =====
+package "Logging" #FEF8E7 {
+  class Logger {
+    - sinks : vector<Sink*>
+    - mutex : mutex
+    --
+    + Info(msg : string)
+    + Debug(msg : string)
+    + Warn(msg : string)
+    + Error(msg : string)
+    + log(level : Level, msg : string)
+  }
+
+  abstract class Sink {
+    + {abstract} log(record : LogRecord)
+  }
+
+  class Terminal {
+    + log(record : LogRecord)
+  }
+
+  class LogRecord <<struct>> {
+    + level : Level
+    + message : string
+    + threadId : thread::id
+    + timestamp : string
+  }
+
+  enum Level {
+    DEBUG
+    INFO
+    WARN
+    ERROR
+  }
+}
+
+' ===== Relationships =====
+App --> Router
+App --> ThreadPool
+App --> Logger
+App ..> Server : <<create>>
+
+Server *-- EventLoop
+Server --> Router
+Server --> ThreadPool : enqueue
+Server --> Logger
+Server ..> Connection : <<create per client>>
+
+Connection --> Router
+Connection --> Logger
+Connection *-- Request
+Connection ..> Response : <<create>>
+Connection ..> httpParser : <<call>>
+
+httpParser ..> Request : fills
+httpParser ..> HttpRequestState
+
+Router *-- Route
+Router ..> Request
+Router ..> Response
+
+Request *-- RequestLine
+Request *-- Header
+Request *-- Body
+
+Response --> StatusCode
+
+Logger o-- Sink : sinks
+Terminal --|> Sink
+Logger ..> LogRecord
+Sink ..> LogRecord
+LogRecord --> Level
+
+' ===== Layout hints =====
+Router -[hidden]right- Logger
+Request -[hidden]down- Response
+@enduml
