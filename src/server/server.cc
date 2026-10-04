@@ -1,10 +1,10 @@
 #include "server.h"
 
+#include <fcntl.h>
 #include <sys/signalfd.h>
 
 #include <cerrno>
 #include <exception>
-#include <fcntl.h>
 #include <system_error>
 
 #include "../thread_pool/thread_pool.h"

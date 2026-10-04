@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include <iostream>
+#include <string>
+#include <unordered_map>
 
 class RequestLine {
  public:
@@ -35,6 +37,7 @@ class Request {
   RequestLine request_line;
   Header header;
   Body body;
+  std::unordered_map<std::string, std::string> path_params;
 
   friend std::ostream &operator<<(std::ostream &os, const Request &r);
 };

@@ -6,6 +6,7 @@ add_executable(
   http_parser/http_parser_test.cc
   logger/logger_test.cc
   request/request_test.cc
+  router/router_test.cc
   response/response_test.cc
   thread_pool/thread_pool_test.cc
   event_loop/event_loop_test.cc

@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "../logger/logger.h"
@@ -28,4 +29,5 @@ class Router {
   std::vector<Route> routes;
 
   void add(const std::string &method, const std::string &path, Handler handler);
+  void match(Request &request, Response &response, Logger *logger) const;
 };
