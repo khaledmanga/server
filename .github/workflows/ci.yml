@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
-    pull_request:
+  pull_request:
 
 jobs:
   build-and-test:
@@ -13,8 +13,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Configure
-        run: cmake -S . -B build -DMAKE_BUILD_TYPE=Release
-        
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+      
       - name: Build
         run: cmake --build build --config Release --parallel
         
