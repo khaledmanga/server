@@ -2,8 +2,11 @@
 
 #include <cstring>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
+
+using json = nlohmann::json;
 
 class RequestLine {
  public:
@@ -28,6 +31,7 @@ class Body {
   std::string value;
   std::string content_type;
 
+  json operator[](const std::string &key);
   friend std::ostream &operator<<(std::ostream &os, const Body &b);
 };
 

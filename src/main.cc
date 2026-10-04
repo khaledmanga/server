@@ -13,14 +13,14 @@ int main() {
 
   router.get("/", [](Request &request, Response &response, Logger &logger) {
     logger.Info("Handling GET /");
-    std::cout << request << std::endl;
-    response.send("Hello World!");
+    std::cout << request.body << std::endl;
+    response.json(json::parse("{\"message\": \"Hello World!\"}"));
   });
 
   router.post("/", [](Request &request, Response &response, Logger &logger) {
     logger.Info("Handling POST /");
-    std::cout << request << std::endl;
-    response.send("Hello World!");
+    std::cout << request.body["message"] << std::endl;
+    response.json(json::parse("{\"message\": \"Hello World!\"}"));
   });
 
   App app;

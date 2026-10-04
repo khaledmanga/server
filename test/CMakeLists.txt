@@ -1,18 +1,9 @@
-file(GLOB_RECURSE SRC_SOURCES CONFIGURE_DEPENDS ../src/*.cc)
-list(FILTER SRC_SOURCES EXCLUDE REGEX "main\\.cc$")
+file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS *.cc)
+file(GLOB_RECURSE SRC_SOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/src/*.cc)
+list(FILTER SRC_SOURCES EXCLUDE REGEX "/main\\.cc$")
 
-add_executable(
-  unit_test
-  http_parser/http_parser_test.cc
-  logger/logger_test.cc
-  request/request_test.cc
-  router/router_test.cc
-  response/response_test.cc
-  thread_pool/thread_pool_test.cc
-  event_loop/event_loop_test.cc
-  ${SRC_SOURCES}
-)
-target_link_libraries(unit_test GTest::gtest_main)
+add_executable(unit_test ${TEST_SOURCES} ${SRC_SOURCES})
+target_link_libraries(unit_test PRIVATE GTest::gtest_main nlohmann_json::nlohmann_json)
 
 include(GoogleTest)
 gtest_discover_tests(unit_test)
