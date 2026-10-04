@@ -10,6 +10,8 @@ std::string to_string(HttpMethod method) {
       return "PUT";
     case HttpMethod::DELETE:
       return "DELETE";
+    case HttpMethod::PATCH:
+      return "PATCH";
     default:
       return "UNKNOWN";
   }
