@@ -39,6 +39,9 @@ class Router {
  public:
   void get(const std::string &path, Handler handler);
   void post(const std::string &path, Handler handler);
+  void put(const std::string &path, Handler handler);
+  void del(const std::string &path, Handler handler);
+  void patch(const std::string &path, Handler handler);
   void add(const std::string &method, const std::string &path, Handler handler);
   void handle(Request &request, Response &response, Logger &logger) const;
 

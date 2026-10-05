@@ -115,3 +115,9 @@ void Route::parseQueries() {
 void Router::get(const std::string &path, Handler handler) { add("GET", path, std::move(handler)); }
 
 void Router::post(const std::string &path, Handler handler) { add("POST", path, std::move(handler)); }
+
+void Router::put(const std::string &path, Handler handler) { add("PUT", path, std::move(handler)); }
+
+void Router::del(const std::string &path, Handler handler) { add("DELETE", path, std::move(handler)); }
+
+void Router::patch(const std::string &path, Handler handler) { add("PATCH", path, std::move(handler)); }
