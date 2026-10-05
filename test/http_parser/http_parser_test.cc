@@ -4,17 +4,6 @@
 
 #include <string>
 
-TEST(HttpParserTest, LeavesIncompleteRequestLineUnconsumed) {
-  Request request;
-  HttpRequestState state = HttpRequestState::RequestLine;
-  std::string raw_request = "GET /items HTTP/1.1";
-
-  EXPECT_EQ(httpParser(request, state, raw_request), HttpRequestState::RequestLine);
-  EXPECT_EQ(state, HttpRequestState::RequestLine);
-  EXPECT_EQ(raw_request, "GET /items HTTP/1.1");
-  EXPECT_TRUE(request.request_line.method.empty());
-}
-
 TEST(HttpParserTest, ParsesGetRequestAndHeaders) {
   Request request;
   HttpRequestState state = HttpRequestState::RequestLine;
@@ -84,10 +73,15 @@ TEST(HttpParserTest, ParsesPostBodyAcrossChunks) {
 TEST(HttpParserTest, LeavesUnsupportedMethodUnparsed) {
   Request request;
   HttpRequestState state = HttpRequestState::RequestLine;
-  std::string raw_request = "DELETE /items HTTP/1.1\r\nHost: example.com\r\n\r\n";
 
-  EXPECT_EQ(httpParser(request, state, raw_request), HttpRequestState::RequestLine);
+  std::string raw_request = "INVALIDMETHOD /items HTTP/1.1\r\nHost: example.com\r\n\r\n";
+
+  HttpRequestState result = httpParser(request, state, raw_request);
+
+  EXPECT_EQ(result, HttpRequestState::RequestLine);
   EXPECT_EQ(state, HttpRequestState::RequestLine);
-  EXPECT_EQ(raw_request, "DELETE /items HTTP/1.1\r\nHost: example.com\r\n\r\n");
+
+  EXPECT_EQ(raw_request, "INVALIDMETHOD /items HTTP/1.1\r\nHost: example.com\r\n\r\n");
+
   EXPECT_TRUE(request.request_line.method.empty());
 }

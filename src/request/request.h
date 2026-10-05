@@ -2,9 +2,13 @@
 
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <nlohmann/json.hpp>
+#include <optional>
 #include <string>
 #include <unordered_map>
+
+class Route;
 
 using json = nlohmann::json;
 
@@ -40,7 +44,9 @@ class Request {
   RequestLine request_line;
   Header header;
   Body body;
-  std::unordered_map<std::string, std::string> path_params;
+  std::shared_ptr<Route> route = nullptr;
 
   friend std::ostream &operator<<(std::ostream &os, const Request &r);
 };
+
+#include "../router/router.h"

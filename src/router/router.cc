@@ -10,7 +10,9 @@ Route::Route(const std::string &method, const std::string &path, const Handler &
 void Router::add(const std::string &method, const std::string &path, Handler handler) { routes.emplace_back(method, path, std::move(handler)); }
 
 void Router::handle(Request &request, Response &response, Logger &logger) const {
-  std::optional<Route> route = this->match(request);
+  std::shared_ptr<Route> route = this->match(request);
+
+  request.route = route;
 
   if (!route) {
     response.status(HTTP::StatusCode::NOT_FOUND);
@@ -21,16 +23,16 @@ void Router::handle(Request &request, Response &response, Logger &logger) const 
   route->handler(request, response, logger);
 }
 
-std::optional<Route> Router::match(Request &request) const {
+std::shared_ptr<Route> Router::match(Request &request) const {
   Route request_route(VALUE_EMPTY, request.request_line.target, [](Request &, Response &, Logger &) {});
 
   for (const auto &route : routes) {
     if (route.match(request_route)) {
-      return route;
+      return std::make_shared<Route>(route);
     }
   }
 
-  return std::nullopt;
+  return nullptr;
 }
 
 bool Route::match(const Route &route) const {
@@ -40,6 +42,14 @@ bool Route::match(const Route &route) const {
 
   for (size_t i = 0; i < this->segments.size(); ++i) {
     if (!this->segments[i].empty() && this->segments[i][0] == ':') {
+      std::string key = this->segments[i].substr(1);
+      std::string value = route.segments[i];
+
+      if (value.empty()) {
+        return false;
+      }
+
+      this->params[key] = value;
       continue;
     }
 
