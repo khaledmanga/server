@@ -27,7 +27,7 @@ void Connection::handle_read() {
     }
   }
 
-  router.handle(request, response, &logger);
+  router.handle(request, response, logger);
 
   this->write_buffer = response.serialize();
   this->handle_write();

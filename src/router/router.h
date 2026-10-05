@@ -1,7 +1,10 @@
 #pragma once
 
+#include <cstddef>
 #include <functional>
+#include <optional>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -11,23 +14,32 @@
 
 using Handler = std::function<void(Request &, Response &, Logger &)>;
 
-class Router {
+class Route {
  public:
-  void get(const std::string &path, Handler handler) { add("GET", path, std::move(handler)); }
+  Route(const std::string &method, const std::string &path, const Handler &handler);
+  bool match(const Route &route) const;
 
-  void post(const std::string &path, Handler handler) { add("POST", path, std::move(handler)); }
+  std::string method;
+  std::string path;
+  Handler handler;
 
-  bool handle(Request &request, Response &response, Logger *logger = nullptr) const;
+  std::vector<std::string> segments;
+  std::unordered_map<std::string, std::string> queries;
 
  private:
-  struct Route {
-    std::string method;
-    std::string path;
-    Handler handler;
-  };
+  void parse();
+  void parseSegments();
+  void parseQueries();
+};
 
-  std::vector<Route> routes;
-
+class Router {
+ public:
+  void get(const std::string &path, Handler handler);
+  void post(const std::string &path, Handler handler);
   void add(const std::string &method, const std::string &path, Handler handler);
-  void match(Request &request, Response &response, Logger *logger) const;
+  void handle(Request &request, Response &response, Logger &logger) const;
+
+ private:
+  std::optional<Route> match(Request &request) const;
+  std::vector<Route> routes;
 };

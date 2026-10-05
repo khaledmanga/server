@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -52,3 +53,5 @@ std::string getReasonPhrase(StatusCode code);
 namespace Log {
 enum class Level { DEBUG, INFO, WARN, ERROR };
 }
+
+const std::string VALUE_EMPTY = "";

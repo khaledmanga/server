@@ -1,82 +1,107 @@
 #include "router.h"
 
-#include <unordered_map>
-#include <utility>
-#include <vector>
-
-namespace {
-std::string normalizePath(const std::string &target) {
-  std::string path = target.substr(0, target.find('?'));
-
-  while (path.size() > 1 && path.back() == '/') {
-    path.pop_back();
-  }
-
-  return path.empty() ? "/" : path;
+Route::Route(const std::string &method, const std::string &path, const Handler &handler) {
+  this->method = method;
+  this->path = path;
+  this->handler = handler;
+  this->parse();
 }
 
-std::vector<std::string> splitPath(const std::string &path) {
-  std::vector<std::string> segments;
-  std::size_t start = 0;
+void Router::add(const std::string &method, const std::string &path, Handler handler) { routes.emplace_back(method, path, std::move(handler)); }
 
-  while (true) {
-    const std::size_t separator = path.find('/', start);
-    segments.push_back(path.substr(start, separator - start));
+void Router::handle(Request &request, Response &response, Logger &logger) const {
+  std::optional<Route> route = this->match(request);
 
-    if (separator == std::string::npos) {
-      return segments;
+  if (!route) {
+    response.status(HTTP::StatusCode::NOT_FOUND);
+    response.send("Not Found");
+    return;
+  }
+
+  route->handler(request, response, logger);
+}
+
+std::optional<Route> Router::match(Request &request) const {
+  Route request_route(VALUE_EMPTY, request.request_line.target, [](Request &, Response &, Logger &) {});
+
+  for (const auto &route : routes) {
+    if (route.match(request_route)) {
+      return route;
     }
-
-    start = separator + 1;
   }
+
+  return std::nullopt;
 }
 
-bool matchPath(const std::string &pattern, const std::string &path, std::unordered_map<std::string, std::string> &params) {
-  const std::vector<std::string> pattern_segments = splitPath(pattern);
-  const std::vector<std::string> path_segments = splitPath(path);
-
-  if (pattern_segments.size() != path_segments.size()) {
+bool Route::match(const Route &route) const {
+  if (route.segments.size() != this->segments.size() || route.queries.size() != this->queries.size()) {
     return false;
   }
 
-  for (std::size_t i = 0; i < pattern_segments.size(); ++i) {
-    const std::string &pattern_segment = pattern_segments[i];
-    const std::string &path_segment = path_segments[i];
+  for (size_t i = 0; i < this->segments.size(); ++i) {
+    if (!this->segments[i].empty() && this->segments[i][0] == ':') {
+      continue;
+    }
 
-    if (pattern_segment.size() > 1 && pattern_segment.front() == ':') {
-      if (path_segment.empty()) {
-        return false;
-      }
-      params[pattern_segment.substr(1)] = path_segment;
-    } else if (pattern_segment != path_segment) {
+    if (this->segments[i] != route.segments[i]) {
       return false;
     }
   }
 
   return true;
 }
-}  // namespace
 
-void Router::add(const std::string &method, const std::string &path, Handler handler) { routes.push_back({method, normalizePath(path), std::move(handler)}); }
-
-bool Router::handle(Request &request, Response &response, Logger *logger) const {
-  match(request, response, logger);
-  return true;
+void Route::parse() {
+  this->parseSegments();
+  this->parseQueries();
 }
 
-void Router::match(Request &request, Response &response, Logger *logger) const {
-  static Logger fallbackLogger;
-  Logger &log = logger ? *logger : fallbackLogger;
-  const std::string path = normalizePath(request.request_line.target);
-  request.path_params.clear();
+void Route::parseSegments() {
+  std::string segmentsPart = this->path.substr(1, this->path.find("?"));
 
-  for (const Route &route : routes) {
-    std::unordered_map<std::string, std::string> path_params;
-    if (route.method == request.request_line.method && matchPath(route.path, path, path_params)) {
-      request.path_params = std::move(path_params);
-      route.handler(request, response, log);
-      return;
-    }
+  segmentsPart += "/";
+
+  size_t start = 0;
+  size_t end = segmentsPart.find("/");
+
+  while (end != std::string::npos) {
+    this->segments.push_back(segmentsPart.substr(start, end - start));
+
+    start = end + 1;
+    end = segmentsPart.find("/", start);
   }
-  response.status(HTTP::StatusCode::NOT_FOUND).send("Not Found");
 }
+
+void Route::parseQueries() {
+  size_t query_pos = this->path.find("?");
+
+  if (query_pos == std::string::npos) {
+    return;
+  }
+
+  std::string queriesPart = this->path.substr(query_pos + 1);
+  queriesPart += "&";
+
+  size_t start = 0;
+  size_t end = queriesPart.find("&");
+
+  while (end != std::string::npos) {
+    std::string kv = queriesPart.substr(start, end - start);
+
+    size_t equal_pos = kv.find("=");
+
+    if (equal_pos != std::string::npos) {
+      std::string key = kv.substr(0, equal_pos);
+      std::string value = kv.substr(equal_pos + 1);
+
+      this->queries[key] = value;
+    }
+
+    start = end + 1;
+    end = queriesPart.find("&", start);
+  }
+}
+
+void Router::get(const std::string &path, Handler handler) { add("GET", path, std::move(handler)); }
+
+void Router::post(const std::string &path, Handler handler) { add("POST", path, std::move(handler)); }
