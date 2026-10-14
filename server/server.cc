@@ -1,11 +1,16 @@
 #include "server.h"
+#include <unistd.h>
 
 Server::Server() {
     this->running = true;
+    this->port = 8080;
+    this->server_fd = -1;
 }
 
-~Server::Server() {
-    close(this->server_fd);
+Server::~Server() {
+    if(this->server_fd >= 0) {
+        close(this->server_fd);
+    }
 }
 
 void Server::set_port(int port) {
@@ -28,14 +33,17 @@ void Server::bind_socket(struct sockaddr_in& addr) {
 }
 
 void Server::listen_sockets() {
-    listen(this->fd, MAXSOCONN);
+    listen(this->server_fd, SOMAXCONN);
 }
 
 void Server::accept_client() {
     struct sockaddr_in client;
     socklen_t client_len = sizeof(client); 
 
-    int fd_client = accept(fd_server, (struct sockaddr*)&client, (socklen_t*)&client_len);
+    int fd_client = accept(this->server_fd, (struct sockaddr*)&client, &client_len);
+    if(fd_client < 0) {
+        return;
+    }
 
     Connection connection(fd_client);
     connection.run();
@@ -45,7 +53,9 @@ void Server::run() {
     this->setup_socket();
     this->listen_sockets();
 
+    std::cout << "Server is running in port: " << this->port << std::endl;
+
     while(this->running) {
-        this->accpet_client();
+        this->accept_client();
     }
 }

@@ -3,8 +3,9 @@
 #include <sys/socket.h>
 #include <iostream>
 #include <netinet/in.h>
+#include "connection.h"
 
-class Server() {
+class Server {
     private:
         int port;
         int server_fd;
@@ -18,4 +19,4 @@ class Server() {
         void set_port(int port);
         void run();
         ~Server();
-}
+};
