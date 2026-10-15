@@ -1,91 +1,55 @@
 #include "http_parser.h"
 
-#include <charconv>
-#include <system_error>
+HttpStatus http_parser(Request &request, HttpStatus &status, std::string &raw) {
+  while (status != HttpStatus::End) {
+    const size_t end = raw.find("\r\n");
 
-HttpStatus http_parser(Request& request, HttpStatus& http_status, const std::string& raw_request) {
-    const size_t request_line_end = raw_request.find("\r\n");
-    if(request_line_end == std::string::npos) {
-        http_status = HttpStatus::RequestLine;
-        return http_status;
+    if (status == HttpStatus::RequestLine) {
+      if (end == std::string::npos)
+        return status;
+
+      std::istringstream line(raw.substr(0, end));
+      std::string version;
+      auto &rl = request.request_line;
+      line >> rl.method >> rl.path >> version;
+
+      const size_t slash = version.find('/');
+      const size_t dot = version.find('.');
+      rl.protocol = version.substr(0, slash);
+      rl.major_version = std::stoi(version.substr(slash + 1, dot - slash - 1));
+      rl.minor_version = std::stoi(version.substr(dot + 1));
+
+      raw.erase(0, end + 2);
+      status = HttpStatus::Header;
+    } else if (status == HttpStatus::Header) {
+      if (end == std::string::npos)
+        return status;
+
+      if (end == 0) {
+        status = HttpStatus::Body;
+      } else {
+        const std::string line = raw.substr(0, end);
+        const size_t colon = line.find(':');
+        const size_t value = line.find_first_not_of(' ', colon + 1);
+        request.header.kv.insert_or_assign(line.substr(0, colon), line.substr(value));
+      }
+      raw.erase(0, end + 2);
+    } else if (status == HttpStatus::Body) {
+      const auto content_length = request.header["Content-Length"];
+      if (content_length) {
+        auto &body = request.body.value;
+        const size_t total = std::stoull(*content_length);
+        const size_t take = std::min(raw.size(), total - body.size());
+
+        body.append(raw, 0, take);
+        raw.erase(0, take);
+        if (body.size() < total)
+          return status;
+      }
+      status = HttpStatus::End;
+    } else {
+      return status;
     }
-
-    std::istringstream request_line(raw_request.substr(0, request_line_end));
-    std::string method;
-    std::string path;
-    std::string protocol_version;
-    if(!(request_line >> method >> path >> protocol_version)) {
-        http_status = HttpStatus::Error;
-        return http_status;
-    }
-
-    const size_t slash = protocol_version.find('/');
-    const size_t dot = protocol_version.find('.');
-    if(slash == std::string::npos || dot == std::string::npos || dot <= slash + 1) {
-        http_status = HttpStatus::Error;
-        return http_status;
-    }
-
-    request.request_line.method = method;
-    request.request_line.path = path;
-    request.request_line.protocol = protocol_version.substr(0, slash);
-    try {
-        request.request_line.major_version =
-            std::stoi(protocol_version.substr(slash + 1, dot - slash - 1));
-        request.request_line.minor_version = std::stoi(protocol_version.substr(dot + 1));
-    } catch(const std::exception&) {
-        http_status = HttpStatus::Error;
-        return http_status;
-    }
-
-    http_status = HttpStatus::Header;
-    const size_t header_end = raw_request.find("\r\n\r\n", request_line_end);
-    if(header_end == std::string::npos) {
-        return http_status;
-    }
-
-    size_t line_start = request_line_end + 2;
-    while(line_start < header_end) {
-        const size_t line_end = raw_request.find("\r\n", line_start);
-        if(line_end == std::string::npos || line_end > header_end) {
-            http_status = HttpStatus::Error;
-            return http_status;
-        }
-
-        const std::string header_line = raw_request.substr(line_start, line_end - line_start);
-        const size_t colon = header_line.find(':');
-        if(colon == std::string::npos) {
-            http_status = HttpStatus::Error;
-            return http_status;
-        }
-
-        size_t value_start = colon + 1;
-        while(value_start < header_line.size() && header_line[value_start] == ' ') {
-            ++value_start;
-        }
-        request.header.kv.insert_or_assign(
-            header_line.substr(0, colon), header_line.substr(value_start));
-        line_start = line_end + 2;
-    }
-
-    http_status = HttpStatus::Body;
-    const size_t body_start = header_end + 4;
-    const auto content_length = request.header["Content-Length"];
-    if(content_length.has_value()) {
-        size_t body_length;
-        const char* length_start = content_length->data();
-        const char* length_end = length_start + content_length->size();
-        const auto result = std::from_chars(length_start, length_end, body_length);
-        if(result.ec != std::errc{} || result.ptr != length_end) {
-            http_status = HttpStatus::Error;
-            return http_status;
-        }
-        if(raw_request.size() - body_start < body_length) {
-            return http_status;
-        }
-        request.body.value = raw_request.substr(body_start, body_length);
-    }
-
-    http_status = HttpStatus::End;
-    return http_status;
+  }
+  return status;
 }

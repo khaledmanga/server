@@ -1,22 +1,18 @@
 #include "response.h"
 
-std::string Response::serialize(const StatusCode& status_code) {
-    std::string res = "HTTP/1.1 " + std::to_string(toStatusCode(status_code)) + " "
-        + toStatusMessage(status_code) + "\r\n";
+std::string Response::serialize(const StatusCode &status_code) {
+  std::string res =
+      "HTTP/1.1 " + std::to_string(toStatusCode(status_code)) + " " + toStatusMessage(status_code) + "\r\n";
 
-    for(auto const&[key, value]: this->header.kv) {
-        res += key + ": " + value + "\r\n";
-    }
+  for (auto const &[key, value] : this->header.kv) {
+    res += key + ": " + value + "\r\n";
+  }
 
-    res += "\r\n";
+  res += "\r\n";
 
-    res += this->body.value;
-    return res;
+  res += this->body.value;
+  return res;
 }
 
-std::string Response::ok() {
-    return this->serialize(StatusCode::OK);
-}
-std::string Response::not_found() {
-    return this->serialize(StatusCode::NotFound);
-}
+std::string Response::ok() { return this->serialize(StatusCode::OK); }
+std::string Response::not_found() { return this->serialize(StatusCode::NotFound); }
