@@ -1,9 +1,9 @@
 #pragma once
 
 #include "connection.h"
+#include "logger/logger.h"
 #include <iostream>
 #include <netinet/in.h>
-#include "logger/logger.h"
 #include <sys/socket.h>
 
 class Server {

@@ -54,6 +54,4 @@ void Server::run() {
   }
 }
 
-void Server::use(Logger logger) {
-  this->logger = std::move(logger);
-}
+void Server::use(Logger logger) { this->logger = std::move(logger); }
