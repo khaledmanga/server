@@ -47,9 +47,13 @@ void Server::run() {
   this->setup_socket();
   this->listen_sockets();
 
-  std::cout << "Server is running in port: " << this->port << std::endl;
+  logger.INFO(std::this_thread::get_id(), "Server is running in port: " + std::to_string(this->port));
 
   while (this->running) {
     this->accept_client();
   }
+}
+
+void Server::use(Logger logger) {
+  this->logger = std::move(logger);
 }

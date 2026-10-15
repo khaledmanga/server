@@ -1,15 +1,12 @@
 cmake_minimum_required(VERSION 3.17)
-
 project(server)
 
-add_executable(server
-    main.cpp
-    include/common.cpp
-    http/http_parser/http_parser.cc
-    http/request/request.cc
-    http/response/response.cc
-    server/connection.cc
-    server/server.cc
-)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-target_include_directories(server PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+file(GLOB_RECURSE SOURCES "*.cc")
+
+add_executable(server ${SOURCES})
+
+target_include_directories(server PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
