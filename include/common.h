@@ -26,6 +26,13 @@ enum class LogLevel {
   WARN,
 };
 
+enum class HttpMethod {
+  GET,
+  POST,
+  PATCH,
+  DELETE,
+};
+
 std::ostream &operator<<(std::ostream &os, const LogLevel &level);
 int toStatusCode(StatusCode status_code);
 std::string toStatusMessage(StatusCode status_code);
