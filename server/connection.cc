@@ -5,49 +5,42 @@
 #include <string>
 #include <unistd.h>
 
-Connection::Connection(int client_fd) { this->client_fd = client_fd; }
+Connection::Connection(int client_fd, Router router) : client_fd(client_fd), router(std::move(router)) {}
 
-bool Connection::handle_read() {
-  HttpStatus http_status = HttpStatus::RequestLine;
+void Connection::handle_read() {
   char buffer[4096];
-
-  while (http_status != HttpStatus::End) {
-    const ssize_t bytes_read = read(this->client_fd, buffer, 4096);
-    if (bytes_read <= 0) {
-      return false;
-    }
-
-    this->read_buffer.append(buffer, (size_t)(bytes_read));
-    http_parser(this->request, http_status, this->read_buffer);
-
-    if (http_status == HttpStatus::Error) {
-      return false;
-    }
+  const ssize_t bytes_read = read(this->client_fd, buffer, sizeof(buffer));
+  if (bytes_read > 0) {
+    this->read_buffer.append(buffer, static_cast<size_t>(bytes_read));
   }
 
-  return true;
+  while (this->parser_status != HttpStatus::End && this->parser_status != HttpStatus::Error) {
+    const size_t previous_size = this->read_buffer.size();
+    http_parser(this->request, this->parser_status, this->read_buffer);
+    if (previous_size == this->read_buffer.size()) {
+      break;
+    }
+  }
+}
+
+void Connection::handle_router() {
+  Route *route = this->router.match(this->request.request_line.path);
+  if (route) {
+    route->handle(this->request, this->response);
+  } else {
+    this->response.status_code = StatusCode::NotFound;
+    this->response.body.value = "Not found";
+  }
+  this->write_buffer = this->response.serialize();
 }
 
 void Connection::handle_write() {
-  Response response;
-  response.body.value = "OK\n";
-  response.header.kv["Content-Length"] = std::to_string(response.body.value.size());
-  response.header.kv["Content-Type"] = "text/plain";
-
-  const std::string output = response.ok();
-  for (size_t sent = 0; sent < output.size();) {
-    const ssize_t n = write(client_fd, output.data() + sent, output.size() - sent);
-    if (n <= 0) {
-      std::cerr << "Failed to write HTTP response\n";
-      return;
-    }
-    sent += (size_t)(n);
+  if (this->write_buffer.empty()) {
+    return;
   }
-}
 
-void Connection::run() {
-  if (this->handle_read()) {
-    this->handle_write();
+  const ssize_t sent = write(this->client_fd, this->write_buffer.data(), this->write_buffer.size());
+  if (sent > 0) {
+    this->write_buffer.erase(0, static_cast<size_t>(sent));
   }
-  close(this->client_fd);
 }

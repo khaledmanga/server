@@ -18,10 +18,12 @@ private:
   std::unordered_map<std::string, std::string> queries;
 
 public:
-  Route(const std::string &path, Handler &handler, HttpMethod http_method);
+  Route(const std::string &path, Handler handler, HttpMethod http_method);
   void parse(const std::string &path);
   void parse_segments(const std::string &segments);
   void parse_queries(const std::string &queries);
+  void handle(Request &req, Response &res);
+  bool match(std::string path);
 };
 
 class Router {
@@ -30,10 +32,9 @@ private:
 
 public:
   Router() = default;
-  void GET(const std::string &path, Handler &handler);
-  void POST(const std::string &path, Handler &handler);
-  void PATCH(const std::string &path, Handler &handler);
-  void DELETE(const std::string &path, Handler &handler);
-  Route match(std::string path);
-  void handle(Route &route, Request &req, Response &res);
+  void GET(const std::string &path, Handler handler);
+  void POST(const std::string &path, Handler handler);
+  void PATCH(const std::string &path, Handler handler);
+  void DELETE(const std::string &path, Handler handler);
+  Route *match(std::string path);
 };

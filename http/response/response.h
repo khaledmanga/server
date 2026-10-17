@@ -35,7 +35,9 @@ public:
   StatusLine status_line;
   ResponseHeader header;
   ResponseBody body;
+  StatusCode status_code = StatusCode::OK;
 
+  std::string serialize();
   std::string ok();
   std::string not_found();
 };
