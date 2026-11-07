@@ -3,11 +3,13 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <vector>
 
 class Server {
 public:
   int port;
   int server_fd;
+  std::unordered_map<int, std::unique_ptr<Connection>> connections;
 
   Server(int port);
   ~Server();

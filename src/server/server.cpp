@@ -58,19 +58,7 @@ void Server::accept_connection() {
 }
 
 void Server::handle_client(int client_socket) {
-  char buffer[1024] = {0};
-  int valread = read(client_socket, buffer, 1024);
-  if (valread < 0) {
-    server_error::perror(server_error::Error{server_error::ErrorCode::READ_FAILED, "Failed to read from client", errno});
-    close(client_socket);
-    return;
-  }
-
-  std::cout << "Received: " << buffer << std::endl;
-
-  const char *response = "Hello from server";
-  send(client_socket, response, strlen(response), 0);
-  close(client_socket);
+    connections[client_socket] = std::make_unique<Connection>(client_socket);
 }
 
 void Server::run() {
