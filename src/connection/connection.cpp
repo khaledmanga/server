@@ -64,8 +64,7 @@ void Connection::handle_read() {
     return;
   }
 
-  this->response = Response(StatusLine("HTTP/1.1", 200, "OK"), Header{}, Body{});
-  this->write_buffer = this->response.serialize();
+  this->write_buffer = this->response.ok();
 }
 
 void Connection::handle_write() {

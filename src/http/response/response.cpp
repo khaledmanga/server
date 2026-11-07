@@ -31,8 +31,8 @@ std::string Response::serialize() {
 
 std::string Response::ok() {
   this->status_line = StatusLine("HTTP/1.1", 200, "OK");
-  this->body.content = "Hello, World!";
-  this->header.content_type = "text/plain";
+  this->body.content = "<h1>Hello</h1>";
+  this->header.content_type = "text/html; charset=utf-8";
   return this->serialize();
 }
 
