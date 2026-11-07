@@ -20,6 +20,8 @@ std::string_view strerror(ErrorCode code) {
     return "Write failed";
   case ErrorCode::PARSE_HTTP_FAILED:
     return "HTTP parsing failed";
+  case ErrorCode::INVALID_REQUEST:
+    return "Invalid HTTP request";
   default:
     return "Unknown error";
   }

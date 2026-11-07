@@ -1,3 +1,6 @@
+#ifndef HTTP_REQUEST_REQUEST_HPP
+#define HTTP_REQUEST_REQUEST_HPP
+
 #include <string>
 
 struct RequestLine {
@@ -8,19 +11,30 @@ struct RequestLine {
   int minor_version;
 };
 
-struct Header {
+struct RequestHeader {
   std::string content_type;
   std::string content_length;
   std::string host;
 };
 
-struct Body {
+struct RequestBody {
   std::string type;
   std::string content;
 };
 
 struct Request {
   RequestLine request_line;
-  Header header;
-  Body body;
+  RequestHeader header;
+  RequestBody body;
+
+  std::string method;
+  std::string uri;
+  std::string protocol;
+  int major_version = 0;
+  int minor_version = 0;
+  std::string content_type;
+  std::string content_length;
+  std::string host;
 };
+
+#endif

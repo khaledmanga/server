@@ -1,8 +1,14 @@
+#ifndef SERVER_HPP
+#define SERVER_HPP
+
+#include "connection/connection.hpp"
 #include "include/error/error.hpp"
 #include <arpa/inet.h>
+#include <memory>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <unordered_map>
 #include <vector>
 
 class Server {
@@ -21,3 +27,5 @@ public:
   void handle_client(int client_socket);
   void run();
 };
+
+#endif

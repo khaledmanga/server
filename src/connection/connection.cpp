@@ -6,17 +6,6 @@
 #include <string>
 #include <unistd.h>
 
-namespace {
-std::string serialize_response(const Response &response) {
-  const std::string content_type =
-      response.header.content_type.empty() ? (response.body.type.empty() ? "text/plain" : response.body.type) : response.header.content_type;
-  const std::string &body = response.body.content;
-
-  return response.status_line.http_version + " " + std::to_string(response.status_line.status_code) + " " + response.status_line.reason_phrase +
-         "\r\nContent-Type: " + content_type + "\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body;
-}
-} // namespace
-
 Connection::Connection(int socket_fd) : response(StatusLine("HTTP/1.1", 200, "OK"), Header{}, Body{}), socket_fd(socket_fd) {}
 
 Connection::~Connection() {
@@ -32,15 +21,9 @@ void Connection::handle_read() {
 
   char buffer[1024];
   ssize_t bytes_read;
-  do {
-    bytes_read = read(socket_fd, buffer, sizeof(buffer));
-  } while (bytes_read < 0 && errno == EINTR);
+  HttpParserState parser_state = HttpParserState::START;
 
-  if (bytes_read == 0) {
-    close(socket_fd);
-    socket_fd = -1;
-    return;
-  }
+  bytes_read = read(socket_fd, buffer, sizeof(buffer));
 
   if (bytes_read < 0) {
     if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -49,19 +32,40 @@ void Connection::handle_read() {
 
     server_error::perror(server_error::Error{server_error::ErrorCode::READ_FAILED, "Failed to read from socket", errno});
     return;
-  }
-
-  read_buffer.append(buffer, static_cast<size_t>(bytes_read));
-  const HttpParserState state = parse_http_request(read_buffer, request);
-  if (state == HttpParserState::COMPLETE) {
-    write_buffer = serialize_response(response);
-    read_buffer.clear();
-  } else if (state == HttpParserState::ERROR) {
-    server_error::perror(server_error::Error{server_error::ErrorCode::PARSE_HTTP_FAILED, "Malformed HTTP request", 0});
+  } else if (bytes_read == 0) {
     close(socket_fd);
     socket_fd = -1;
-    read_buffer.clear();
+    return;
   }
+
+  this->read_buffer.append(buffer, static_cast<size_t>(bytes_read));
+
+  while (parser_state != HttpParserState::COMPLETE && parser_state != HttpParserState::ERROR) {
+    parse_http_request(parser_state, this->read_buffer, this->request);
+
+    if (parser_state == HttpParserState::COMPLETE) {
+      break;
+    }
+
+    if (parser_state == HttpParserState::ERROR) {
+      break;
+    }
+
+    bytes_read = read(socket_fd, buffer, sizeof(buffer));
+    if (bytes_read <= 0) {
+      break;
+    }
+
+    this->read_buffer.append(buffer, static_cast<size_t>(bytes_read));
+  }
+
+  if (parser_state == HttpParserState::ERROR) {
+    server_error::perror(server_error::Error{server_error::ErrorCode::INVALID_REQUEST, "Invalid HTTP request", 0});
+    return;
+  }
+
+  this->response = Response(StatusLine("HTTP/1.1", 200, "OK"), Header{}, Body{});
+  this->write_buffer = this->response.serialize();
 }
 
 void Connection::handle_write() {
@@ -69,22 +73,37 @@ void Connection::handle_write() {
     return;
   }
 
-  while (!write_buffer.empty()) {
-    ssize_t bytes_written;
-    do {
-      bytes_written = write(socket_fd, write_buffer.data(), write_buffer.size());
-    } while (bytes_written < 0 && errno == EINTR);
+  size_t total_written = 0;
+  size_t buffer_size = write_buffer.size();
 
-    if (bytes_written > 0) {
-      write_buffer.erase(0, static_cast<size_t>(bytes_written));
-      continue;
-    }
+  while (total_written < buffer_size) {
+    ssize_t bytes_written = write(socket_fd, write_buffer.c_str() + total_written, buffer_size - total_written);
 
-    if (bytes_written < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+    if (bytes_written < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+      if (errno == EAGAIN || errno == EWOULDBLOCK) {
+        break;
+      }
+
+      server_error::perror(server_error::Error{server_error::ErrorCode::WRITE_FAILED, "Failed to write to socket", errno});
       return;
     }
 
-    server_error::perror(server_error::Error{server_error::ErrorCode::WRITE_FAILED, "Failed to write to socket", errno});
-    return;
+    if (bytes_written == 0) {
+      break;
+    }
+
+    total_written += bytes_written;
   }
+
+  if (total_written > 0) {
+    write_buffer.erase(0, total_written);
+  }
+}
+
+void Connection::run() {
+  handle_read();
+  handle_write();
 }

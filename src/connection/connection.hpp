@@ -1,6 +1,8 @@
+#ifndef CONNECTION_CONNECTION_HPP
+#define CONNECTION_CONNECTION_HPP
+
 #include "http/request/request.hpp"
 #include "http/response/response.hpp"
-#include "http_request/request.hpp"
 #include "include/error/error.hpp"
 #include <string>
 
@@ -18,4 +20,7 @@ public:
 
   void handle_read();
   void handle_write();
-}
+  void run();
+};
+
+#endif

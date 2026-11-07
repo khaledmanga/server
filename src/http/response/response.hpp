@@ -1,3 +1,8 @@
+#ifndef HTTP_RESPONSE_RESPONSE_HPP
+#define HTTP_RESPONSE_RESPONSE_HPP
+
+#include <string>
+
 struct StatusLine {
   std::string http_version;
   int status_code;
@@ -19,10 +24,16 @@ struct Body {
   std::string content;
 };
 
-struct Response {
+class Response {
+public:
   StatusLine status_line;
   Header header;
   Body body;
 
   Response(const StatusLine &status, const Header &hdr, const Body &bdy) : status_line(status), header(hdr), body(bdy) {}
+  std::string ok();
+  std::string not_found();
+  std::string serialize();
 };
+
+#endif

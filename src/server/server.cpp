@@ -37,7 +37,7 @@ void Server::bind_socket() {
 }
 
 void Server::listen_socket() {
-  if (listen(this->server_fd, 3) < 0) {
+  if (listen(this->server_fd, SOMAXCONN) < 0) {
     server_error::perror(server_error::Error{server_error::ErrorCode::LISTEN_FAILED, "Failed to listen on socket", errno});
     exit(EXIT_FAILURE);
   }
@@ -57,7 +57,10 @@ void Server::accept_connection() {
   handle_client(client_socket);
 }
 
-void Server::handle_client(int client_socket) { connections[client_socket] = std::make_unique<Connection>(client_socket); }
+void Server::handle_client(int client_socket) {
+  connections[client_socket] = std::make_unique<Connection>(client_socket);
+  connections[client_socket]->run();
+}
 
 void Server::run() {
   create_socket();
