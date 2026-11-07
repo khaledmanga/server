@@ -1,0 +1,1 @@
+enum class HttpParserState { REQUEST_LINE, HEADERS, BODY, COMPLETE, ERROR };

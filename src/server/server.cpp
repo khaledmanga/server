@@ -57,9 +57,7 @@ void Server::accept_connection() {
   handle_client(client_socket);
 }
 
-void Server::handle_client(int client_socket) {
-    connections[client_socket] = std::make_unique<Connection>(client_socket);
-}
+void Server::handle_client(int client_socket) { connections[client_socket] = std::make_unique<Connection>(client_socket); }
 
 void Server::run() {
   create_socket();

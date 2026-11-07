@@ -2,7 +2,7 @@
 #include <string_view>
 
 namespace server_error {
-enum class ErrorCode { SOCKET_CREATION_FAILED, BIND_FAILED, LISTEN_FAILED, ACCEPT_FAILED, READ_FAILED, WRITE_FAILED };
+enum class ErrorCode { SOCKET_CREATION_FAILED, BIND_FAILED, LISTEN_FAILED, ACCEPT_FAILED, READ_FAILED, WRITE_FAILED, PARSE_HTTP_FAILED };
 
 struct Error {
   ErrorCode code;
