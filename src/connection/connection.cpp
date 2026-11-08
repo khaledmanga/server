@@ -6,7 +6,8 @@
 #include <string>
 #include <unistd.h>
 
-Connection::Connection(int socket_fd) : response(StatusLine("HTTP/1.1", 200, "OK"), Header{}, Body{}), socket_fd(socket_fd) {}
+Connection::Connection(int socket_fd, const Router &router)
+    : response(StatusLine("HTTP/1.1", 200, "OK"), Header{}, Body{}), socket_fd(socket_fd), router(router) {}
 
 Connection::~Connection() {
   if (socket_fd != -1) {
@@ -64,7 +65,15 @@ void Connection::handle_read() {
     return;
   }
 
-  this->write_buffer = this->response.ok();
+  HTTP_METHOD method = from_string(this->request.request_line.method);
+  Handler handler;
+  Route *route = this->router.match(this->request.request_line.path, method, handler);
+  if (route != nullptr) {
+    route->handler(this->request, this->response);
+    this->write_buffer = this->response.serialize();
+  } else {
+    this->write_buffer = this->response.not_found();
+  }
 }
 
 void Connection::handle_write() {

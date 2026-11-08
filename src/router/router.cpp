@@ -43,7 +43,7 @@ void Route::parse(const std::string &path) {
 }
 
 bool Route::match(const std::string &path, HTTP_METHOD method, Handler handler) {
-  Route route(path, method, handler);
+  Route route(path, method);
 
   if (route.method != this->method) {
     return false;
@@ -82,8 +82,8 @@ std::ostream &operator<<(std::ostream &os, const Route &route) {
   return os;
 }
 
-Route *Router::match(const std::string &path, HTTP_METHOD &method, Handler &handler) {
-  for (auto &route : this->routes) {
+Route *Router::match(const std::string &path, HTTP_METHOD &method, Handler &handler) const {
+  for (const auto &route : this->routes) {
     if (route.second->match(path, method, handler)) {
       return route.second.get();
     }

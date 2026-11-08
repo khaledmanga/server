@@ -95,7 +95,7 @@ void parse_http_request(HttpParserState &parser_state, const std::string &raw_re
   size_t CLRF_pos = raw_request.find("\r\n");
 
   if (CLRF_pos == std::string::npos) {
-    parser_state = HttpParserState::ERROR;
+    parser_state = HttpParserState::REQUEST_LINE;
     return;
   }
 
@@ -109,7 +109,7 @@ void parse_http_request(HttpParserState &parser_state, const std::string &raw_re
 
   size_t header_end_pos = remaining.find("\r\n\r\n");
   if (header_end_pos == std::string::npos) {
-    parser_state = HttpParserState::ERROR;
+    parser_state = HttpParserState::HEADERS;
     return;
   }
 

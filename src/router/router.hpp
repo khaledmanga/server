@@ -31,7 +31,7 @@ public:
   void POST(const std::string &path, Handler handler);
   void PUT(const std::string &path, Handler handler);
   void DELETE(const std::string &path, Handler handler);
-  Route *match(const std::string &path, HTTP_METHOD &method, Handler &handler);
+  Route *match(const std::string &path, HTTP_METHOD &method, Handler &handler) const;
 };
 
 #endif // ROUTER_ROUTER_HPP
