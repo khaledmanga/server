@@ -4,6 +4,7 @@
 #include "connection/connection.hpp"
 #include "include/error/error.hpp"
 #include "router/router.hpp"
+#include "logger/logger.hpp"
 #include <arpa/inet.h>
 #include <memory>
 #include <netinet/in.h>
@@ -18,6 +19,7 @@ public:
   int server_fd;
   std::unordered_map<int, std::unique_ptr<Connection>> connections;
   Router router;
+  Logger logger;
 
   Server(int port);
   ~Server();
@@ -28,7 +30,8 @@ public:
   void accept_connection();
   void handle_client(int client_socket);
   void run();
-  void use(const Router& router);
+  void use(const Router &router);
+  void use(const Logger &logger);
 };
 
 #endif

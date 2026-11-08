@@ -4,17 +4,19 @@
 #include "http/request/request.hpp"
 #include "http/response/response.hpp"
 #include "include/error/error.hpp"
+#include "logger/logger.hpp"
 #include "router/router.hpp"
 #include <string>
 
 class Connection {
 public:
-  Connection(int socket_fd, const Router& router);
+  Connection(int socket_fd, const Router &router, const Logger &logger);
   ~Connection();
 
   Request request;
   Response response;
   const Router &router;
+  const Logger &logger;
 
   std::string read_buffer;
   std::string write_buffer;

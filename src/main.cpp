@@ -16,5 +16,6 @@ int main() {
 
   Server server(port);
   server.use(router);
+  server.logger.add_sink(std::make_unique<Terminal>());
   server.run();
 }

@@ -6,8 +6,8 @@
 #include <string>
 #include <unistd.h>
 
-Connection::Connection(int socket_fd, const Router &router)
-    : response(StatusLine("HTTP/1.1", 200, "OK"), Header{}, Body{}), socket_fd(socket_fd), router(router) {}
+Connection::Connection(int socket_fd, const Router &router, const Logger& logger)
+    : response(StatusLine("HTTP/1.1", 200, "OK"), Header{}, Body{}), socket_fd(socket_fd), router(router), logger(logger) {}
 
 Connection::~Connection() {
   if (socket_fd != -1) {
@@ -49,7 +49,7 @@ void Connection::handle_read() {
     }
 
     if (parser_state == HttpParserState::ERROR) {
-      break;
+      break;  
     }
 
     bytes_read = read(socket_fd, buffer, sizeof(buffer));
@@ -64,6 +64,8 @@ void Connection::handle_read() {
     server_error::perror(server_error::Error{server_error::ErrorCode::INVALID_REQUEST, "Invalid HTTP request", 0});
     return;
   }
+
+  this->logger.INFO(request.request_line.path);
 
   HTTP_METHOD method = from_string(this->request.request_line.method);
   Handler handler;
