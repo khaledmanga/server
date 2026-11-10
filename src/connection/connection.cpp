@@ -22,6 +22,7 @@ void Connection::handle_read() {
 
   char buffer[1024];
   ssize_t bytes_read;
+  this->request = Request{};
   HttpParserState parser_state = HttpParserState::START;
 
   bytes_read = read(socket_fd, buffer, sizeof(buffer));
@@ -53,6 +54,12 @@ void Connection::handle_read() {
     }
 
     bytes_read = read(socket_fd, buffer, sizeof(buffer));
+    if (bytes_read < 0 && errno == EINTR) {
+      continue;
+    }
+    if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+      return;
+    }
     if (bytes_read <= 0) {
       break;
     }
@@ -65,6 +72,11 @@ void Connection::handle_read() {
     return;
   }
 
+  if (parser_state != HttpParserState::COMPLETE) {
+    return;
+  }
+
+  this->response = Response(StatusLine("HTTP/1.1", 200, "OK"), Header{}, Body{});
   this->logger.INFO(request.request_line.path);
 
   HTTP_METHOD method = from_string(this->request.request_line.method);
@@ -76,6 +88,10 @@ void Connection::handle_read() {
   } else {
     this->write_buffer = this->response.not_found();
   }
+
+  this->read_buffer.clear();
+
+  return this->handle_write();
 }
 
 void Connection::handle_write() {
@@ -111,9 +127,4 @@ void Connection::handle_write() {
   if (total_written > 0) {
     write_buffer.erase(0, total_written);
   }
-}
-
-void Connection::run() {
-  handle_read();
-  handle_write();
 }
