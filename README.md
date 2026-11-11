@@ -1,4 +1,4 @@
-# HTTP Versions and Features
+# HTTP Versions and Features.
 
 ## HTTP/0.9 (1991) – The Prototype
 * **Single method support:** Uses only the `GET` method to request data from the server.
